@@ -1,0 +1,31 @@
+<view class='player'>
+  <view class="swith_line">
+  </view>
+  <view class="top-rod {{ isPlay ? '' : 'rotate' }}">
+  </view>
+  <view class="music_cover {{ isPlay ? 'Rotation' : '' }}">
+      <image src="{{ playing.img }}"></image>
+  </view>
+  <view class="irl_box">
+    <view class="item"><view class='iconfont icon-xiai'></view></view>
+    <view class="item"><view class='iconfont icon-xiazai'></view></view>
+    <view class="item"><view class='iconfont icon-jingyin'></view></view>
+    <view class="item"><view class='iconfont icon-pinghengqi'></view></view>
+  </view>
+  <view class="time_box">
+    <view class="star_time">{{ currentTimeStr }}</view>
+    <view class="slide_time">
+        <slider value="{{ currentTime }}" bindchange="sliderchange"/>
+    </view>
+    <view class="star_time end_time">{{ durationStr }}</view>
+  </view>
+
+  <view class="play_btn">
+      <view class="item"><view class='iconfont icon-suiji' ></view></view>
+      <view class="item"><view class='iconfont icon-kuaitui' bindtap="pre"></view></view>
+      <view class="item"><view class="iconfont bf {{ isPlay ? 'icon-bofang' : 'icon-zanting' }}" bindtap="playMusic"></view></view>
+      <view class="item"><view class='iconfont icon-kuaijin' bindtap="next"></view></view>
+      <view class="item"><view class='iconfont icon-changpian' ></view></view>
+  </view>
+
+</view>
