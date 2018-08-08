@@ -1,14 +1,14 @@
 page{ background: #323232; }
 .index, .index_slide_menu, .index_mask{ height: 100%; position: fixed; width: 100%; font-size: 32rpx; border-top:1px #efefef solid; transition: all 0.5s; 
    background: #fff; z-index: 2; left: 0; top: 0;}
-.index_slide{ transform: scale(0.6); left: 65%; box-shadow: 0 0 5px #ffffff; top: -10% } 
-.index_slide_menu{ background: none; z-index: 1; width: 80%; border: 0; left: -70%; transform: scale(0.8); }
+.index_slide{ transform: scale(0.6); left: 65%; box-shadow: 0 0 5px #ffffff; } 
+.index_slide_menu{ background: none; z-index: 1; width: 80%; border: 0; left: 0; transform: scale(0.6); }
 .index_slide_menu_slide{ left: 0%; transform: scale(1);  }
 .index_mask{ z-index: 3; background: #323232; box-shadow: none; opacity: 0; }
 
 .index_slide_menu .slide_menu_list .list_item{ line-height: 88rpx; display: flex; color: #fff; }
 .index_slide_menu .slide_menu_list .list_item .text{ width: 100%; padding-left: 30rpx; }
-
+ 
 .index-head{ display: flex; padding: 30rpx; border-bottom: 1px #efefef solid;}
 .index-head image{ width: 120rpx; height: 120rpx; border-radius: 50%; margin-right: 20rpx; }
 .index-head .item_text{ height: 120rpx; line-height: 60rpx; width: 100%; }
