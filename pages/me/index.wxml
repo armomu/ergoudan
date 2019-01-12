@@ -1,0 +1,6 @@
+<view class="regist">
+    <view class="content-block">
+        <view class="ui-btn p" bindtap="onRegist">播放器</view>
+    </view>
+
+</view>

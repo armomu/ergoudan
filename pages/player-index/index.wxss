@@ -1,0 +1,52 @@
+page{ background: #323232; }
+.index, .index_slide_menu, .index_mask{ height: 100%; position: fixed; width: 100%; font-size: 32rpx; border-top:1px #efefef solid; transition: all 0.5s; 
+   background: #fff; z-index: 2; left: 0; top: 0;}
+.index_slide{ transform: scale(0.6); left: 65%; box-shadow: 0 0 5px #ffffff; } 
+.index_slide_menu{ background: none; z-index: 1; width: 80%; border: 0; left: 0; transform: scale(0.6); }
+.index_slide_menu_slide{ left: 0%; transform: scale(1);  }
+.index_mask{ z-index: 3; background: #323232; box-shadow: none; opacity: 0; }
+
+.index_slide_menu .slide_menu_list .list_item{ line-height: 88rpx; display: flex; color: #fff; }
+.index_slide_menu .slide_menu_list .list_item .text{ width: 100%; padding-left: 30rpx; }
+ 
+.index-head{ display: flex; padding: 30rpx; border-bottom: 1px #efefef solid;}
+.index-head image{ width: 120rpx; height: 120rpx; border-radius: 50%; margin-right: 20rpx; }
+.index-head .item_text{ height: 120rpx; line-height: 60rpx; width: 100%; }
+.index-head .min_name{ font-size: 24rpx; color: #999;}
+.index-head .right_icon{ width: 200rpx; height: 120rpx; text-align: center; line-height: 120rpx; }
+.index-head .right_icon .iconfont{ font-size: 48rpx; color: #5AB5C6 }
+
+.menu_list{ padding: 30rpx 0; column-count: 3; column-gap: 30rpx; text-align: center; margin-bottom: 30rpx; font-size: 32rpx; }
+.menu_list .item{ margin-bottom: 30rpx;}
+.menu_list .item .item_icon{ padding: 30rpx; }
+.menu_list .item .item_icon .iconfont{ font-size: 64rpx; color: #5AB5C6 }
+.menu_list .item .item_name{ color: #999999; }
+
+.bottom_play{ display: flex; position: absolute; left: 0; bottom: 0; width: 100%; height: 120rpx; box-shadow: 0 -2px 5px #efefef; }
+.bottom_play .item_pic{ width: 120rpx; height: 120rpx; position: relative; top: -30rpx; margin-left: 30rpx;  border-radius: 50%; border: 3px #999 solid;animation-fill-mode:forwards;   }
+.bottom_play .item_pic image{ width: 120rpx; height: 120rpx; border-radius: 50%;display: block; box-shadow: 0 -2px 5px #efefef; }
+.bottom_play .item_text{ width: 100%; margin-left: 30rpx; }
+.bottom_play .item_text .item_name{ padding: 10rpx 0; }
+.bottom_play .item_text .item_singer{  color: #999999; font-size: 24rpx;  }
+.bottom_play .item_icon{ display: flex; line-height: 120rpx; margin-right: 30rpx; color: #999; }
+.bottom_play .item_icon .iconfont{ font-size: 60rpx;  }
+.bottom_play .item_icon .bf{ margin: 0 40rpx;}
+.bottom_play .current_time{ position: absolute;top: 0; height: 2px; width: 100%; }
+.bottom_play .current_time .current_time_width{  height: 2px; background: #5AB5C6; width: 0; transition: all .3s;}
+
+@keyframes rotation{
+    from {-webkit-transform: rotate(0deg);}
+    to {-webkit-transform: rotate(360deg);}
+    }
+.Rotation{
+    animation: rotation 7s linear infinite;
+}
+
+
+
+
+
+
+
+
+

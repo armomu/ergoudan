@@ -1,0 +1,53 @@
+.tab-h {
+    height: 80rpx;
+    width: 100%;
+    line-height: 80rpx;
+    background: #409EFF;
+    font-size: 32rpx;
+    align-items: center;
+}
+
+.tab-item {
+    width: 33.33%;
+    float: left;
+    color: white;
+    text-align: center;
+}
+
+.tab-item.active {
+    position: relative;
+    font-weight: bold;
+}
+
+.tab-item.active:after {
+    content: "";
+    display: block;
+    height: 6rpx;
+    width: 80rpx;
+    background: yellow;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    border-radius: 3rpx;
+    margin-left: -40rpx;
+}
+
+.item-ans {
+    width: 100%;
+    display: flex;
+    flex-grow: row no-wrap;
+    justify-content: space-between;
+    padding: 30rpx;
+    box-sizing: border-box;
+    height: 180rpx;
+    align-items: center;
+    border-bottom: 1px solid #F2F2F2;
+}
+
+.scoll-h {
+    height: 100%;
+}
+
+.tab-content {
+    height: calc(100vh - 80rpx);
+}

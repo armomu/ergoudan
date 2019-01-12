@@ -1,16 +1,22 @@
 {
-	"description": "项目配置文件。",
+	"description": "项目配置文件",
+	"packOptions": {
+		"ignore": []
+	},
 	"setting": {
-		"urlCheck": true,
+		"urlCheck": false,
 		"es6": true,
 		"postcss": true,
 		"minified": true,
 		"newFeature": true
 	},
 	"compileType": "miniprogram",
-	"libVersion": "1.9.94",
+	"libVersion": "1.0.1",
 	"appid": "wxd772fe94c79ff237",
-	"projectname": "music%20player",
+	"projectname": "%E8%9C%82%E5%B7%A2%E7%89%A9%E8%81%94%E7%BD%91%E8%BF%90%E7%BB%B4",
+	"debugOptions": {
+		"hidedInDevtools": []
+	},
 	"isGameTourist": false,
 	"condition": {
 		"search": {

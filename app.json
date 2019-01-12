@@ -1,19 +1,50 @@
 {
-  "pages": [    
-    "pages/index/index",
-    "pages/player/player"    
-  ],
-  "window": {
-    "backgroundTextStyle": "light",
-    "navigationBarBackgroundColor": "#fff",
-    "navigationBarTitleText": "Music Player",
-    "navigationBarTextStyle": "white"
-  },
-  "networkTimeout": {
-    "request": 10000,
-    "connectSocket": 10000,
-    "uploadFile": 10000,
-    "downloadFile": 10000
-  },
-  "debug": false
+	"pages": [
+		"pages/indoor/index",
+		"pages/index/index",
+    	"pages/task/index",
+		"pages/me/index",
+		"pages/example/index",
+		"pages/player-index/index",
+		"pages/player/player"
+	],
+	"window": {
+		"backgroundTextStyle": "dark",
+		"backgroundColor": "#f2f3f5",
+		"navigationBarBackgroundColor": "#fff",
+		"navigationBarTitleText": "一号空间",
+		"navigationBarTextStyle": "black",
+		"enablePullDownRefresh": false
+	},
+	"tabBar": {
+		"backgroundColor": "#fff",
+		"borderStyle": "black",
+		"selectedColor": "#409EFF",
+		"color": "#333",
+		"list": [
+			{
+				"pagePath": "pages/indoor/index",
+				"iconPath": "static/images/id_s@2x.png",
+				"selectedIconPath": "static/images/id@2x.png",
+				"text": "首页"
+			},
+			{
+				"pagePath": "pages/task/index",
+				"iconPath": "static/images/od_s@2x.png",
+				"selectedIconPath": "static/images/od@2x.png",
+				"text": "任务"
+			},
+			{
+				"pagePath": "pages/me/index",
+				"iconPath": "static/images/uc_s@2x.png",
+				"selectedIconPath": "static/images/uc@2x.png",
+				"text": "我的"
+			}
+		]
+	},
+	"networkTimeout": {
+		"request": 10000,
+		"downloadFile": 10000
+	},
+	"debug": true
 }

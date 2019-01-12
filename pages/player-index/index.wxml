@@ -1,0 +1,95 @@
+<view class="index_slide_menu {{ show ? 'index_slide_menu_slide' : '' }}">
+  <view class="slide_menu_list">
+    <view class="list_item" wx:for-items="{{list}}" wx:key="{{item.id}}" wx:for-index="idx">
+      <view class="text"  bindtap="playItem" data-id="{{idx}}">
+        {{ idx+1 }} {{item.name}}
+      </view>
+      <view class="r {{ isPlay ? 'Rotation' : '' }}" style="display:{{ item.isPlaying ? 'block' : 'none' }}" >
+        <view class="iconfont icon-changpian"></view>
+      </view>
+    </view>
+  </view>
+</view>
+<view class="index_mask index_slide" style="display:{{ show ? 'block' : 'none' }}" bindtap="showMenu">
+
+</view>
+<view class="index {{ show ? 'index_slide' : '' }}">
+  <view class="index-head">
+    <view bindtap="showMenu" class="head_pic"><image src='../../img/timg.5ac7093.jpg'></image></view>
+    <view class="item_text" bindtap="showMenu">
+      <view class="user_name">陈夕</view>
+      <view class="min_name">歌单点这里</view>
+    </view>
+    <view class="right_icon">
+      <view class='iconfont icon-lishibisai'></view>
+    </view>
+    <view class="right_icon">
+      <view class='iconfont icon-changpian'></view>
+    </view>
+    <!-- <button type="primary" bindtap='newPage'>564</button> -->
+  </view>
+  <!-- <view class="cx">
+
+  </view> -->
+  <view class="menu_list">
+    <view class="item">
+      <view class="item_icon" bindtap="getWxStorage">
+        <view class='iconfont icon-yinle'></view>
+      </view>
+      <view class="item_name">乐库</view>
+    </view>
+    <view class="item">
+      <view class="item_icon">
+        <view class='iconfont icon-xiazai'></view>
+      </view>
+      <view class="item_name">下载</view>
+    </view>
+    <view class="item">
+      <view class="item_icon">
+        <view class='iconfont icon-erji'></view>
+      </view>
+      <view class="item_name">电台</view>
+    </view>
+    <view class="item">
+      <view class="item_icon">
+        <view class='iconfont icon-xiai'></view>
+      </view>
+      <view class="item_name">你喜欢</view>
+    </view>
+    <view class="item">
+      <view class="item_icon">
+        <view class='iconfont icon-huatong'></view>
+      </view>
+      <view class="item_name">麦MAX</view>
+    </view>
+    <view class="item">
+      <view class="item_icon">
+        <view class='iconfont icon-changpian'></view>
+      </view>
+      <view class="item_name">音乐圈</view>
+    </view>
+  </view>
+  <view></view>
+  <view></view>
+  <view></view>
+  <!-- <audio poster="1" name="1" author="1" src="{{playing.src}}" id="myAudio"  bindtimeupdate="funtimeupdate"></audio> -->
+  <view class="bottom_play">
+    <view class="current_time">
+      <view class="current_time_width" style="width:{{ currentTime }}%">      
+      </view>
+    </view>
+    <view class="item_pic  {{ isPlay ? 'Rotation' : '' }}"  bindtap='newPage' data-name="{{playing.name}}">
+      <image src='{{ playing.img }}'></image>
+    </view>
+    <view class="item_text" bindtap='newPage' data-name="{{ playing.name }}">
+     <view class="item_name">{{ playing.name }}</view>
+      <view class="item_singer">{{ playing.singer }}</view>
+    </view>
+    <view class="item_icon">
+      <view class='iconfont icon-kuaitui' bindtap="pre"></view>
+      <view class="iconfont bf {{ isPlay ? 'icon-bofang' : 'icon-zanting' }}" bindtap="audioPlay"></view>
+      <view class='iconfont icon-kuaijin' bindtap="next"></view>
+    </view>
+  </view>
+
+</view>

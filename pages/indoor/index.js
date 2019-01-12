@@ -5,8 +5,8 @@ Page({
 		markers: [
 			{
 				id: 1,
-				latitude: 22.719265,
-				longitude: 114.229784,
+				latitude: 22.719282,
+				longitude: 114.22971,
 				iconPath: '../../static/img/marker.png',
 				name: 'marker1',
 				callout: {
@@ -35,14 +35,13 @@ Page({
 					display: 'ALWAYS'
 				}
 			}],
-		latitude: 22.720448,
-		longitude: 114.228813,
-		textData: {},
-		city: '',
-		scale: 18
+		latitude: 22.719317,
+		longitude: 114.230514,
+		scale: 18,
+		indoor:false
 	},
 	onShow() {
-		this.getLoacation();
+		//this.getLoacation();
 	},
 	getLoacation(){
 		const that = this;
@@ -61,8 +60,6 @@ Page({
 						latitude:e.latitude
 					});
 				}
-				console.log(e);
-				console.log(that.data);
 			}
 		})
 	},
@@ -84,34 +81,41 @@ Page({
 		this.setData({
 			markers: this.data.markers
 		});
-		console.log(this);
-		// fenest.modal(this.markers[0].name);
 	},
 	bindTap(e) {
 		fenest.showToast('点击地图');
 	},
 	enterClick() {
-		wx.navigateTo({
-			url: '../example/index'
-		});
+		// wx.navigateTo({
+		// 	url: '../example/index'
+		// });
+    let list = ['采集设施', '上报问题','创建工作'];
+    fenest.showActionSheet(list).then((res) => {
+      if (res) {
+        fenest.showToast('你选择了' + res);
+      }
+    });
 	},
 	onActionSheet() {
-		wx.getSystemInfo({
-			success(res) {
-				const phone = res.system.substring(0,3);
-				let list = ["室内设施", "室外设施"];
-				if(phone !== "iOS"){
-					list = ["室内设施", "室外设施", "取消"]
-				}
-				fenest.showActionSheet(list).then((res) => {
-					if (res) {
-						fenest.showToast('你选择了' + res);
-					}
-				});
-			}
+		this.setData({
+			indoor: !this.data.indoor,
+			latitude: this.data.latitude,
+			longitude: this.data.longitude,
 		});
-
-
+		// wx.getSystemInfo({
+		// 	success(res) {
+		// 		const phone = res.system.substring(0, 3);
+		// 		let list = ['室内设施', '室外设施'];
+		// 		if (phone !== 'iOS') {
+		// 			list = ['室内设施', '室外设施', '取消'];
+		// 		}
+		// 		fenest.showActionSheet(list).then((res) => {
+		// 			if (res) {
+		// 				fenest.showToast('你选择了' + res);
+		// 			}
+		// 		});
+		// 	}
+		// });
 	},
 	onScanCode() {
 		wx.scanCode({
