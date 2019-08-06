@@ -1,0 +1,24 @@
+
+@import "../../custom-variables.scss";
+
+page {
+    background: #f5f7f8;
+}
+.index {
+    font-size: 28px;
+    color: $color-text;
+    .map {
+        width: 100%;
+        height: calc(100vh - 218px);
+        position: relative;
+        top: 100px;
+    }
+    .map-center-icon {
+        width: 35px;
+        height: 63px;
+        position: absolute;
+        left: 50%;
+        margin-left: -18px;
+        bottom: 50%;
+    }
+}
