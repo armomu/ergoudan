@@ -7,11 +7,16 @@ page {
 .index {
     font-size: 28px;
     color: $color-text;
+    .dj{
+        display: none;
+        width: 0;
+        height: 0;
+        opacity: 0;
+    }
     .map {
         width: 100%;
-        height: calc(100vh - 218px);
+        height: 100vh;
         position: relative;
-        top: 100px;
     }
     .map-center-icon {
         width: 35px;
