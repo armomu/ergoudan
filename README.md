@@ -10,15 +10,15 @@
 ├─src
 │  ├─assets // 资源
 │  ├─components // 组件
-│  ├─model // api 字典
-│  ├─store // mobx
+│  ├─model // Api 字典
+│  ├─store // Mobx
 │  ├─utils // 工具
 │  ├─app.js // 入口
-│  ├─custom-variables.scss // scss 变量
+│  ├─custom-variables.scss // Scss 变量
 │  └─index.html
-├─editorconfig // editor 插件配置
-├─eslintrc // eslint 规则
-├─gitignore 
+├─editorconfig // Editor 插件配置
+├─eslintrc // Eslint 规则
+├─gitignore // Git 忽略文件
 ├─package.json 
 ├─project.config.json 
 └─README.md 
@@ -38,7 +38,7 @@ yarn dev:weapp
 + 播放器（待开发）
 
 ## 截图
-
+![地图](https://raw.githubusercontent.com/Groundhog-Chen/min-program-demo/master/src/assets/map.png)
 
 ### 哦 Hoho!
 若对你有帮助或着喜欢的话别忘了点赞哦！
