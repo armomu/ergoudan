@@ -38,7 +38,7 @@ yarn dev:weapp
 + 播放器（待开发）
 
 ## 截图
-![地图](https://raw.githubusercontent.com/Groundhog-Chen/min-program-demo/master/src/assets/map.png)
+![地图](https://raw.githubusercontent.com/894620576/min-program-demo/master/src/assets/map.png)
 
 ### 哦 Hoho!
 若对你有帮助或着喜欢的话别忘了点赞哦！
