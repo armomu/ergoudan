@@ -10,7 +10,8 @@
 ├─src
 │  ├─assets // 资源
 │  ├─components // 组件
-│  ├─model // Api 字典
+│  ├─model // Api && 字典
+│  ├─pages // 页面
 │  ├─store // Mobx
 │  ├─utils // 工具
 │  ├─app.js // 入口
