@@ -60,7 +60,7 @@ class Index extends Component {
                     className='map'
                     id='myMap'
                     scale='20'
-                    layer-style={1}
+                    layer-style={2}
                     subkey='O7FBZ-WN73K-EZQJ7-AITE5-BETRJ-44B45'
                     showLocation
                     showCompass
