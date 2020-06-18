@@ -1,7 +1,7 @@
 {
-  "pages": [    
+  "pages": [
     "pages/index/index",
-    "pages/player/player"    
+    "pages/player/player"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -15,5 +15,6 @@
     "uploadFile": 10000,
     "downloadFile": 10000
   },
-  "debug": false
+  "debug": false,
+  "sitemapLocation": "sitemap.json"
 }
