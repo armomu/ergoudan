@@ -9,6 +9,7 @@
 ### This is a simple Havok physics character controller demo using Babylon.js 6
 
 原理很简单，使用物理线性移动角色, 使用 WSAD 和 space 键控制角色
+
 The principle is very simple, use physics to move the character linearly, Control character using WSAD and space keys
 #### Online Demo [https://armomu.github.io/babylonjs-character-generator/](https://armomu.github.io/babylonjs-character-generator/)
 
@@ -21,6 +22,6 @@ The principle is very simple, use physics to move the character linearly, Contro
 - ❌ Uphill and downhill 上坡下坡
 - ❌ mobile device 兼容移动设备
     
-## 截图
+## Screenshot
 
 <img width="50%" src="https://github.com/armomu/babylonjs-character-generator/raw/master/public/094246.png">
