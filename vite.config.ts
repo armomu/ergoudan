@@ -6,7 +6,7 @@ import vuetify from 'vite-plugin-vuetify';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    base: '/coconut',
+    base: '/babylonjs-character-generator',
     plugins: [vue(), vuetify() as any, vueJsx()],
     server: {
         open: false,
