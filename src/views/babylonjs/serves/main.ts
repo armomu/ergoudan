@@ -87,6 +87,8 @@ export class BabylonScene {
         meshes.scaling = new BABYLON.Vector3(-60, 60, 60);
         meshes.position.y = -20;
 
+        let oceanSkybox: BABYLON.AbstractMesh | null;
+
         res.meshes.forEach((meshe, index) => {
             meshe.receiveShadows = true;
             const nos = [
@@ -103,8 +105,8 @@ export class BabylonScene {
                 'N_Road_M_Wiidc_TileFlower_0',
                 'F_Obj_M_Cmn_MainColor_0',
             ];
-            if (meshe.name === nos[1]) {
-                meshe.position.y -= 3;
+            if (meshe.name === nos[2]) {
+                oceanSkybox = meshe;
             }
             if (index === 0 || nos.includes(meshe.name)) return;
             try {
@@ -121,28 +123,23 @@ export class BabylonScene {
                 console.log(err);
             }
         });
-        // this.loadPlayer();
+        this.loadPlayer();
         this.addParticleSystem();
-        // console.log(oceanMeshe.position);
-        // this.scene.onAfterRenderObservable.add(() => {
-        //     if() {
 
-        //     }
-        //     oceanMeshe.position.z -= 0.3;
-        // });
-        const oceanMeshe = BABYLON.MeshBuilder.CreateGround(
-            'waterMesh',
-            { width: 6467, height: 6467 },
-            this.scene
-        );
-        oceanMeshe.position.y = -16;
+        const groundMaterial = new BABYLON.StandardMaterial('groundMaterial', this.scene);
+        groundMaterial.diffuseTexture = new BABYLON.Texture('/textures/ground.jpg', this.scene);
+        groundMaterial.diffuseTexture.uScale = groundMaterial.diffuseTexture.vScale = 4;
+
+        const ground = BABYLON.Mesh.CreateGround('ground', 512, 512, 32, this.scene, false);
+        ground.position.y = -1;
+        ground.material = groundMaterial;
+
+        // Water
+        const waterMesh = BABYLON.Mesh.CreateGround('waterMesh', 512, 512, 32, this.scene, false);
 
         const water = new WaterMaterial('water', this.scene, new BABYLON.Vector2(512, 512));
         water.backFaceCulling = true;
-        water.bumpTexture = new BABYLON.Texture(
-            '/wii_daisy_circuit/textures/M_Wiidc_Ocean_baseColor.png',
-            this.scene
-        );
+        water.bumpTexture = new BABYLON.Texture('/textures/waterbump.png', this.scene);
         water.windForce = -15;
         water.waveHeight = 1.3;
         water.windDirection = new BABYLON.Vector2(1, 1);
@@ -151,8 +148,10 @@ export class BabylonScene {
         water.bumpHeight = 0.1;
         water.waveLength = 0.1;
         // water.addToRenderList(this.scene.environmentTexture);
-        water.addToRenderList(oceanMeshe);
-        oceanMeshe.material = water;
+        water.addToRenderList(oceanSkybox);
+        water.addToRenderList(ground);
+        waterMesh.material = water;
+
         // oceanMeshe.material = this.randomColorMaterial();
     }
 

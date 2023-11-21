@@ -167,8 +167,8 @@ export class ThirdPersonController {
         }
         if (this.iswsad && !this.jumpState.jump) {
             const dir = this.lookAtBox();
-            this.velocity.x = (dir.x * delta) / 1;
-            this.velocity.z = (dir.z * delta) / 1;
+            this.velocity.x = dir.x * delta;
+            this.velocity.z = dir.z * delta;
         } else {
             this.velocity.x = 0;
             this.velocity.z = 0;
