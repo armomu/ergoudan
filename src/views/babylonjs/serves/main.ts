@@ -1,5 +1,6 @@
 import * as BABYLON from '@babylonjs/core';
 import '@babylonjs/loaders/glTF';
+import { WaterMaterial } from '@babylonjs/materials';
 import HavokPhysics from '@babylonjs/havok';
 import { ThirdPersonController } from './thirdPersonController';
 import { useLoading } from '../widgets/loading';
@@ -14,10 +15,6 @@ export class BabylonScene {
     public characterController!: ThirdPersonController;
     public LoadingStore = useLoading();
     constructor(_canvas: HTMLCanvasElement) {
-        // const a = new BABYLON.Vector3(-63.033409118652344, 0.14467144012451172, 68.64418029785156);
-        // const b = new BABYLON.Vector3(-63.033409118652344, 0.14467144012451172, 68.49132537841797);
-        // console.log(a.subtractFromFloats(b.x, b.y, b.z));
-        // console.log(a.addInPlaceFromFloats);
         this.main(_canvas);
     }
     private async main(canvas: HTMLCanvasElement) {
@@ -25,29 +22,207 @@ export class BabylonScene {
         const havokPlugin = await HavokPhysics();
         this.engine = new BABYLON.Engine(canvas, true);
         this.scene = new BABYLON.Scene(this.engine);
-        // this.scene.useRightHandedSystem = true;
-        this.scene.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(
-            import.meta.env.BASE_URL + '/textures/environment.dds',
-            this.scene
-        );
-        this.scene.createDefaultSkybox(this.scene.environmentTexture);
+        // this.scene.environmentTexture = BABYLON.CubeTexture.CreateFromImages(
+        //     [import.meta.env.BASE_URL + '/wii_daisy_circuit/textures/M_Wiidc_VR_baseColor.png'],
+        //     this.scene
+        // );
+        // this.scene.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(
+        //     import.meta.env.BASE_URL + '/textures/environment.dds',
+        //     this.scene
+        // );
+        // this.scene.createDefaultSkybox(this.scene.environmentTexture);
+
         this.physicsPlugin = new BABYLON.HavokPlugin(true, havokPlugin);
         this.scene.enablePhysics(undefined, this.physicsPlugin);
         this.physicsViewer = new BABYLON.PhysicsViewer();
         this.addCamera(canvas);
         // this.addGround();
         // this.loadGltf();
-        this.addLight();
+        await this.addLight();
         // this.addAxesViewer();
         // this.addSkybox();
         // this.onTestMap();
-        this.onCollisionMap();
+        // this.onCollisionMap();
+        this.loadWiiDaisyCircuit();
         this.engine.runRenderLoop(() => {
             this.scene.render();
         });
         window.addEventListener('resize', () => {
             this.engine.resize();
         });
+        const pickingRay = new BABYLON.Ray(
+            new BABYLON.Vector3(0, 0, 0),
+            new BABYLON.Vector3(0, 1, 0)
+        );
+        const rayHelper = new BABYLON.RayHelper(pickingRay);
+        rayHelper.show(this.scene);
+        const raycastResult = new BABYLON.PhysicsRaycastResult();
+        const physEngine = this.scene.getPhysicsEngine();
+        this.scene.onPointerDown = () => {
+            this.scene.createPickingRayToRef(
+                this.scene.pointerX,
+                this.scene.pointerY,
+                null,
+                pickingRay,
+                this.camera
+            );
+            (physEngine as any)?.raycastToRef(
+                pickingRay.origin,
+                pickingRay.origin.add(pickingRay.direction.scale(10000)),
+                raycastResult
+            );
+            if (raycastResult.hasHit) {
+                console.log(raycastResult.hitPointWorld);
+                // _x: -38.306026458740234, _y: 1.0256233215332031, _z: 21.65768051147461}
+            }
+        };
+    }
+
+    public async loadWiiDaisyCircuit() {
+        const res = await this.loadAsset('/wii_daisy_circuit/', 'scene.gltf');
+        res.addAllToScene();
+        // const a = new BABYLON.AxesViewer();
+        const meshes = res.meshes[0];
+        meshes.receiveShadows = true;
+        meshes.scaling = new BABYLON.Vector3(-60, 60, 60);
+        meshes.position.y = -20;
+
+        res.meshes.forEach((meshe, index) => {
+            meshe.receiveShadows = true;
+            const nos = [
+                'M_Building_M_Cmn_MainColor_0',
+                'F_Ocean1_M_Wiidc_Ocean_0',
+                'VR_mesh_M_Wiidc_VR_0',
+                'M_Building_M_Cmn_MainColor_Detail_0',
+                'M_Ground_M_Cmn_Audience_0',
+                'F_Ground_M_Wiidc_Signboard_0',
+                'N_Obj_M_Wiidc_MetalMlt_0',
+                'M_Roadside_Obj_M_Wiidc_Plaza_WaterFountain_0',
+                'Audience1_M_Wiidc_Signboard_0',
+                'N_Road_M_Wiidc_Road_0',
+                'N_Road_M_Wiidc_TileFlower_0',
+                'F_Obj_M_Cmn_MainColor_0',
+            ];
+            if (index === 0 || nos.includes(meshe.name)) return;
+            try {
+                const res = new BABYLON.PhysicsAggregate(
+                    meshe,
+                    BABYLON.PhysicsShapeType.MESH,
+                    { mass: 0, friction: 0.5 },
+                    this.scene
+                );
+                this.shadowGenerator.addShadowCaster(meshe);
+                // this.physicsViewer.showBody(res.body);
+            } catch (err) {
+                console.log(index, '================');
+                console.log(err);
+            }
+        });
+        // this.loadPlayer();
+        this.addParticleSystem();
+        // console.log(oceanMeshe.position);
+        // this.scene.onAfterRenderObservable.add(() => {
+        //     if() {
+
+        //     }
+        //     oceanMeshe.position.z -= 0.3;
+        // });
+        const oceanMeshe = BABYLON.MeshBuilder.CreateDisc('disc', { radius: 6467 }, this.scene);
+        oceanMeshe.position.y = 1;
+        const water = new WaterMaterial('water', this.scene, new BABYLON.Vector2(512, 512));
+        water.backFaceCulling = true;
+        water.bumpTexture = new BABYLON.Texture(
+            '/wii_daisy_circuit/textures/M_Wiidc_Ocean_baseColor.png',
+            this.scene
+        );
+        water.windForce = -15;
+        water.waveHeight = 1.3;
+        water.windDirection = new BABYLON.Vector2(1, 1);
+        water.waterColor = new BABYLON.Color3(0.1, 0.1, 0.6);
+        water.colorBlendFactor = 0.3;
+        water.bumpHeight = 0.1;
+        water.waveLength = 0.1;
+        // water.addToRenderList(this.scene.environmentTexture);
+        water.addToRenderList(oceanMeshe);
+        oceanMeshe.material = water;
+    }
+
+    public addParticleSystem() {
+        const particleSystem = new BABYLON.GPUParticleSystem(
+            'particles',
+            { capacity: 20000 * 2 },
+            this.scene
+        );
+
+        // Texture of each particle
+        particleSystem.particleTexture = new BABYLON.Texture(
+            '/textures/flare32bits.png',
+            this.scene
+        );
+        particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_ADD;
+
+        // Where the particles come from
+        particleSystem.createConeEmitter(4, Math.PI / 2);
+
+        // Colors of all particles
+        particleSystem.color1 = new BABYLON.Color4(0.2, 0.5, 1.0, 1.0);
+        particleSystem.color2 = new BABYLON.Color4(0.2, 0.5, 1.0, 1.0);
+        particleSystem.colorDead = new BABYLON.Color4(0, 0, 0.2, 0.4);
+
+        // Size of each particle (random between...
+        particleSystem.minSize = 0.5 * 1.5;
+        particleSystem.maxSize = 0.5 * 1.5;
+
+        // Life time of each particle (random between...
+        particleSystem.minLifeTime = 2.0;
+        particleSystem.maxLifeTime = 2.5;
+
+        // Emission rate
+        particleSystem.emitRate = 1500 * 2;
+
+        // Set the gravity of all particles
+        particleSystem.gravity = new BABYLON.Vector3(0, -10.81, 0);
+
+        // Speed
+        particleSystem.minEmitPower = 2.5;
+        particleSystem.maxEmitPower = 6.5;
+        particleSystem.updateSpeed = 0.02;
+
+        // Start the particle system
+        particleSystem.preWarmCycles = 60 * 8;
+        particleSystem.emitter = new BABYLON.Vector3(-40.2, 10, 20.87);
+        particleSystem.start();
+        // this.scene.registerBeforeRender(() => {
+        //     const fluidRenderer = this.scene.enableFluidRenderer();
+        //     const renderObject = fluidRenderer?.addParticleSystem(particleSystem);
+
+        //     const fluidObject = renderObject?.object;
+        //     const targetRenderer = renderObject?.targetRenderer;
+        // });
+        const p2 = particleSystem.clone('p2', new BABYLON.Vector3(52.3, 10, 21.81));
+        p2.start();
+    }
+
+    private async loadPlayer() {
+        // const zombieRes = await this.loadAsset('/textures/', 'zombie-girl.glb', () => {
+        //     this.onProgress(50, 10);
+        // });
+        // zombieRes.addAllToScene();
+        const container = await this.loadAsset('/textures/', 'x-bot.glb', () => {
+            this.onProgress(100, 3);
+        });
+        const [mesheRoot] = container.meshes;
+        mesheRoot.receiveShadows = true;
+        this.shadowGenerator.addShadowCaster(mesheRoot);
+        container.addAllToScene();
+        this.characterController = new ThirdPersonController(container, this.camera, this.scene);
+
+        // this.physicsViewer.showBody(this.characterController.physPlayer.body);
+        this.LoadingStore.onShow(100);
+        setTimeout(() => {
+            this.addRandomBox();
+            this.LoadingStore.onHide();
+        }, 200);
     }
 
     public onCollisionMap() {
@@ -163,135 +338,53 @@ export class BabylonScene {
         this.loadPlayer();
     }
 
-    public async onTestMap() {
-        const res = await this.loadAsset('/', 'collision-world.glb');
-        res.animationGroups.forEach((item) => {
-            item.speedRatio = 0.5;
-            item.play(true);
-        });
-        res.meshes.forEach((meshe, index) => {
-            if (index === 0) {
-                return;
-            }
-            // const aggregateBody = new BABYLON.PhysicsAggregate(
-            //     meshe,
-            //     BABYLON.PhysicsShapeType.MESH,
-            //     { mass: 0, friction: 0.5 },
-            //     this.scene
-            // );
-            meshe.receiveShadows = true;
-            this.shadowGenerator.addShadowCaster(meshe);
-            // meshe.material = this.randomColorMaterial();
-            if (meshe.physicsBody) {
-                // this.physicsViewer.showBody(meshe.physicsBody);
-            }
-        });
-        const [mesheRoot] = res.meshes;
-
-        // test_map.checkCollisions = true;
-        // this.shadowGenerator.addShadowCaster(test_map);
-        // const aggregateBody = new BABYLON.PhysicsAggregate(
-        //     test_map,
-        //     BABYLON.PhysicsShapeType.BOX,
-        //     { mass: 0, friction: 0.5 },
-        //     this.scene
-        // );
-        console.log('add map');
-        res.addAllToScene();
-        if (mesheRoot.physicsBody) {
-            this.physicsViewer.showBody(mesheRoot.physicsBody);
-        }
-        // this.loadPlayer();
-        // this.onMoveWithCollisions();
-        // this.pgTest();
-
-        const raycastResult = new BABYLON.PhysicsRaycastResult();
-        const physEngine = this.scene.getPhysicsEngine();
-
-        const pickingRay = new BABYLON.Ray(
-            new BABYLON.Vector3(0, 0.1, 0),
-            new BABYLON.Vector3(0, -1, 0),
-            10
-        );
-        const rayHelper = new BABYLON.RayHelper(pickingRay);
-        rayHelper.show(this.scene);
-
-        const start = new BABYLON.Vector3(0, 0.15, 0);
-
-        const end = new BABYLON.Vector3(0, start.y - 0.16, 0);
-        (physEngine as any).raycastToRef(start, end, raycastResult);
-        // console.log(raycastResult, 'hasHit');
-        console.log(raycastResult.hasHit, 'hasHit');
-    }
-    private async loadPlayer() {
-        const zombieRes = await this.loadAsset('/textures/', 'zombie-girl.glb', () => {
-            this.onProgress(50, 10);
-        });
-        zombieRes.addAllToScene();
-        const container = await this.loadAsset('/textures/', 'x-bot.glb', () => {
-            this.onProgress(100, 3);
-        });
-        const [mesheRoot] = container.meshes;
-        mesheRoot.receiveShadows = true;
-        this.shadowGenerator.addShadowCaster(mesheRoot);
-        container.addAllToScene();
-        this.characterController = new ThirdPersonController(container, this.camera, this.scene);
-
-        // this.physicsViewer.showBody(this.characterController.physPlayer.body);
-        this.LoadingStore.onShow(100);
-        setTimeout(() => {
-            this.addRandomBox();
-            this.LoadingStore.onHide();
-        }, 200);
-    }
-
     private addCamera(canvas: HTMLCanvasElement) {
         this.camera = new BABYLON.ArcRotateCamera(
             'arcCamera1',
             0,
             0,
             6,
-            BABYLON.Vector3.Zero(),
+            new BABYLON.Vector3(7, 3, -76),
             this.scene
         );
-        // this.scene.createPickingRayToRef;
-        // this.camera.rotation = new BABYLON.Vector3(0, 0, 0);
         this.camera.attachControl(canvas, false);
-        const cam2 = new BABYLON.ArcRotateCamera(
-            'cam2',
-            0.2,
-            Math.PI / 2.5,
-            25,
-            BABYLON.Vector3.Zero(),
-            this.scene
-        );
-        cam2.viewport = new BABYLON.Viewport(0.75, 0.75, 0.25, 0.25);
-        this.scene?.activeCameras?.push(cam2);
-        this.scene?.activeCameras?.push(this.camera);
+        // 右上角相机
+        // const cam2 = new BABYLON.ArcRotateCamera(
+        //     'arcCamera2',
+        //     0,
+        //     0,
+        //     100,
+        //     new BABYLON.Vector3(0, 100, 0),
+        //     this.scene
+        // );
 
-        // this.camera.setPosition(new BABYLON.Vector3(19.94, 8.14, -9.26));
-        this.camera.setPosition(new BABYLON.Vector3(0, 8.14, -9.26));
-        // this.camera.checkCollisions = true;
-        // this.camera.collisionRadius = new BABYLON.Vector3(1, 1, 1);
+        // cam2.viewport = new BABYLON.Viewport(0.75, 0.75, 180, 101.25);
+        // this.scene.activeCameras?.push(this.camera);
+        // this.scene.activeCameras?.push(cam2);
+
+        // this.scene.cameraToUseForPointers = this.camera;
+        // this.scene.cameraToUseForPointers = cam2;
+        this.camera.setPosition(new BABYLON.Vector3(7, 8.14, -76));
         this.camera.lowerRadiusLimit = 3; // 最小缩放;
         // this.camera.upperRadiusLimit = 8; // 最大缩放
 
+        // cam2.setPosition(new BABYLON.Vector3(0, 100, 0));
         // 锁定鼠标指针
-        const isLocked = false;
-        this.scene.onPointerDown = () => {
-            if (!isLocked) {
-                canvas.requestPointerLock =
-                    canvas.requestPointerLock ||
-                    canvas.msRequestPointerLock ||
-                    canvas.mozRequestPointerLock ||
-                    canvas.webkitRequestPointerLock ||
-                    false;
-                if (canvas.requestPointerLock) {
-                    // isLocked = true;
-                    canvas.requestPointerLock();
-                }
-            }
-        };
+        // const isLocked = false;
+        // this.scene.onPointerDown = () => {
+        //     if (!isLocked) {
+        //         canvas.requestPointerLock =
+        //             canvas.requestPointerLock ||
+        //             canvas.msRequestPointerLock ||
+        //             canvas.mozRequestPointerLock ||
+        //             canvas.webkitRequestPointerLock ||
+        //             false;
+        //         if (canvas.requestPointerLock) {
+        //             // isLocked = true;
+        //             canvas.requestPointerLock();
+        //         }
+        //     }
+        // };
     }
 
     private addLight() {
@@ -303,10 +396,10 @@ export class BabylonScene {
         );
         hemisphericLight.intensity = 0.1;
 
-        const lightDirection = new BABYLON.Vector3(0, -1, 0);
+        const lightDirection = new BABYLON.Vector3(0, -90, 200);
         const light = new BABYLON.DirectionalLight('DirectionalLight', lightDirection, this.scene);
-        light.position = new BABYLON.Vector3(0, 20, 6);
-        light.intensity = 0.5;
+        light.position = new BABYLON.Vector3(0, 70, -100);
+        light.intensity = 1.5;
         this.shadowGenerator = new BABYLON.ShadowGenerator(2048, light);
         // this.shadowGenerator.useKernelBlur = true;
         // this.shadowGenerator.blurKernel = 200;
@@ -314,7 +407,8 @@ export class BabylonScene {
 
         this.shadowGenerator.setDarkness(0.5);
         this.shadowGenerator.filter = BABYLON.ShadowGenerator.FILTER_PCF;
-        // this.addLigthHelper(light, lightDirection);
+        this.addLigthHelper(light, lightDirection);
+        return Promise.resolve();
     }
 
     public loadAsset(
@@ -512,4 +606,27 @@ export class BabylonScene {
         // this.physicsViewer.showBody(res.body);
         return res;
     }
+}
+
+function getImageFileFromUrl(url: string): Promise<File> {
+    return new Promise((resolve, reject) => {
+        let blob = null;
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', url);
+        xhr.setRequestHeader('Accept', 'image/png');
+        xhr.responseType = 'blob';
+        // 加载时处理
+        xhr.onload = () => {
+            // 获取返回结果
+            blob = xhr.response;
+            const imgFile = new File([blob], 'img', { type: 'image/png' });
+            // 返回结果
+            resolve(imgFile);
+        };
+        xhr.onerror = (e) => {
+            reject(e);
+        };
+        // 发送
+        xhr.send();
+    });
 }

@@ -1,0 +1,11 @@
+Model Information:
+* title:	wii daisy circuit
+* source:	https://sketchfab.com/3d-models/wii-daisy-circuit-5b3f32089cb648e9906c30f5e14c9b0c
+* author:	amogusstrikesback2 (https://sketchfab.com/amogusstrikesback2)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "wii daisy circuit" (https://sketchfab.com/3d-models/wii-daisy-circuit-5b3f32089cb648e9906c30f5e14c9b0c) by amogusstrikesback2 (https://sketchfab.com/amogusstrikesback2) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
