@@ -103,6 +103,9 @@ export class BabylonScene {
                 'N_Road_M_Wiidc_TileFlower_0',
                 'F_Obj_M_Cmn_MainColor_0',
             ];
+            if (meshe.name === nos[1]) {
+                meshe.position.y -= 3;
+            }
             if (index === 0 || nos.includes(meshe.name)) return;
             try {
                 const res = new BABYLON.PhysicsAggregate(
@@ -127,8 +130,13 @@ export class BabylonScene {
         //     }
         //     oceanMeshe.position.z -= 0.3;
         // });
-        const oceanMeshe = BABYLON.MeshBuilder.CreateDisc('disc', { radius: 6467 }, this.scene);
-        oceanMeshe.position.y = 1;
+        const oceanMeshe = BABYLON.MeshBuilder.CreateGround(
+            'waterMesh',
+            { width: 6467, height: 6467 },
+            this.scene
+        );
+        oceanMeshe.position.y = -16;
+
         const water = new WaterMaterial('water', this.scene, new BABYLON.Vector2(512, 512));
         water.backFaceCulling = true;
         water.bumpTexture = new BABYLON.Texture(
@@ -145,6 +153,7 @@ export class BabylonScene {
         // water.addToRenderList(this.scene.environmentTexture);
         water.addToRenderList(oceanMeshe);
         oceanMeshe.material = water;
+        // oceanMeshe.material = this.randomColorMaterial();
     }
 
     public addParticleSystem() {
