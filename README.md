@@ -17,8 +17,8 @@ The principle is very simple, use havok physics to move the character linearly, 
 - ✅ Havok Physics engine
 - ✅ Contrl character using WASD
 - ✅ Jump
-- ❌ Climb stairs
-- ❌ Uphill and downhill
+- ✅ Climb stairs
+- ✅ Uphill and downhill
 - ❌ Mobile device 
     
 ## Screenshot

@@ -11,7 +11,7 @@ export const useLoading = defineStore('loading', () => {
             visible.value = true;
         }
         if (val >= 100) {
-            visible.value = false;
+            // visible.value = false;
         }
     };
 

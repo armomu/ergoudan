@@ -19,7 +19,6 @@
 <script setup lang="ts">
 import Loading from './widgets/loading.vue';
 import { onMounted, shallowRef, onBeforeUnmount, reactive } from 'vue';
-
 import { BabylonScene } from './serves/main';
 const canvasDom = shallowRef<HTMLCanvasElement>();
 const msg = reactive({
@@ -125,4 +124,4 @@ onBeforeUnmount(() => {
     height: 100%;
 }
 </style>
-./serves/main
+./serves/main ../main ../widgets/loading.vue

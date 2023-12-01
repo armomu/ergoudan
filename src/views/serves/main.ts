@@ -14,33 +14,23 @@ export class BabylonScene {
     public characterController!: ThirdPersonController;
     public LoadingStore = useLoading();
     constructor(_canvas: HTMLCanvasElement) {
-        // const a = new BABYLON.Vector3(-63.033409118652344, 0.14467144012451172, 68.64418029785156);
-        // const b = new BABYLON.Vector3(-63.033409118652344, 0.14467144012451172, 68.49132537841797);
-        // console.log(a.subtractFromFloats(b.x, b.y, b.z));
-        // console.log(a.addInPlaceFromFloats);
         this.main(_canvas);
     }
     private async main(canvas: HTMLCanvasElement) {
-        // this.LoadingStore.onShow();
         const havokPlugin = await HavokPhysics();
         this.engine = new BABYLON.Engine(canvas, true);
         this.scene = new BABYLON.Scene(this.engine);
-        // this.scene.useRightHandedSystem = true;
         this.scene.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(
             import.meta.env.BASE_URL + '/textures/environment.dds',
             this.scene
         );
-        this.scene.createDefaultSkybox(this.scene.environmentTexture);
+        // this.scene.createDefaultSkybox(this.scene.environmentTexture);
         this.physicsPlugin = new BABYLON.HavokPlugin(true, havokPlugin);
         this.scene.enablePhysics(undefined, this.physicsPlugin);
         this.physicsViewer = new BABYLON.PhysicsViewer();
         this.addCamera(canvas);
-        // this.addGround();
-        // this.loadGltf();
+
         this.addLight();
-        // this.addAxesViewer();
-        // this.addSkybox();
-        // this.onTestMap();
         this.onCollisionMap();
         this.engine.runRenderLoop(() => {
             this.scene.render();
@@ -50,18 +40,18 @@ export class BabylonScene {
         });
     }
 
-    public onCollisionMap() {
+    public async onCollisionMap() {
         this.LoadingStore.onShow(1);
-        this.addGround();
+
         // 创建楼梯的参数
         const stepWidth = 4; // 每个步骤的宽度
-        const stepHeight = 1; // 每个步骤的高度
+        const stepHeight = 0.5; // 每个步骤的高度
         const stepDepth = 2; // 每个步骤的深度
-        const numSteps = 7; // 楼梯的步骤数量
+        const numSteps = 13; // 楼梯的步骤数量
         // 创建步骤的循环
         for (let i = 0; i < numSteps; i++) {
             // 计算当前步骤的位置
-            const stepPosition = new BABYLON.Vector3(0, i * stepHeight, i * stepDepth);
+            const stepPosition = new BABYLON.Vector3(0, i * stepHeight, i * stepDepth - 10);
 
             // 创建当前步骤的立方体
             const step = BABYLON.MeshBuilder.CreateBox(
@@ -126,7 +116,7 @@ export class BabylonScene {
             this.scene
         );
         conveyor.receiveShadows = true;
-        conveyor.position = new BABYLON.Vector3(-5, 0.005, -8);
+        conveyor.position = new BABYLON.Vector3(-5, 0.005, -15);
         const conveyorPhys = this.addPhysicsAggregate(conveyor);
         conveyorPhys.body.setMotionType(1);
 
@@ -163,70 +153,14 @@ export class BabylonScene {
         this.loadPlayer();
     }
 
-    public async onTestMap() {
-        const res = await this.loadAsset('/', 'collision-world.glb');
-        res.animationGroups.forEach((item) => {
-            item.speedRatio = 0.5;
-            item.play(true);
-        });
-        res.meshes.forEach((meshe, index) => {
-            if (index === 0) {
-                return;
-            }
-            // const aggregateBody = new BABYLON.PhysicsAggregate(
-            //     meshe,
-            //     BABYLON.PhysicsShapeType.MESH,
-            //     { mass: 0, friction: 0.5 },
-            //     this.scene
-            // );
-            meshe.receiveShadows = true;
-            this.shadowGenerator.addShadowCaster(meshe);
-            // meshe.material = this.randomColorMaterial();
-            if (meshe.physicsBody) {
-                // this.physicsViewer.showBody(meshe.physicsBody);
-            }
-        });
-        const [mesheRoot] = res.meshes;
-
-        // test_map.checkCollisions = true;
-        // this.shadowGenerator.addShadowCaster(test_map);
-        // const aggregateBody = new BABYLON.PhysicsAggregate(
-        //     test_map,
-        //     BABYLON.PhysicsShapeType.BOX,
-        //     { mass: 0, friction: 0.5 },
-        //     this.scene
-        // );
-        console.log('add map');
-        res.addAllToScene();
-        if (mesheRoot.physicsBody) {
-            this.physicsViewer.showBody(mesheRoot.physicsBody);
-        }
-        // this.loadPlayer();
-        // this.onMoveWithCollisions();
-        // this.pgTest();
-
-        const raycastResult = new BABYLON.PhysicsRaycastResult();
-        const physEngine = this.scene.getPhysicsEngine();
-
-        const pickingRay = new BABYLON.Ray(
-            new BABYLON.Vector3(0, 0.1, 0),
-            new BABYLON.Vector3(0, -1, 0),
-            10
-        );
-        const rayHelper = new BABYLON.RayHelper(pickingRay);
-        rayHelper.show(this.scene);
-
-        const start = new BABYLON.Vector3(0, 0.15, 0);
-
-        const end = new BABYLON.Vector3(0, start.y - 0.16, 0);
-        (physEngine as any).raycastToRef(start, end, raycastResult);
-        // console.log(raycastResult, 'hasHit');
-        console.log(raycastResult.hasHit, 'hasHit');
-    }
     private async loadPlayer() {
         const zombieRes = await this.loadAsset('/textures/', 'zombie-girl.glb', () => {
             this.onProgress(50, 10);
         });
+        const [zombie] = zombieRes.meshes;
+        zombie.position.y = 6.3;
+        zombie.position.z = 20;
+
         zombieRes.addAllToScene();
         const container = await this.loadAsset('/textures/', 'x-bot.glb', () => {
             this.onProgress(100, 3);
@@ -236,7 +170,7 @@ export class BabylonScene {
         this.shadowGenerator.addShadowCaster(mesheRoot);
         container.addAllToScene();
         this.characterController = new ThirdPersonController(container, this.camera, this.scene);
-
+        this.addGround();
         // this.physicsViewer.showBody(this.characterController.physPlayer.body);
         this.LoadingStore.onShow(100);
         setTimeout(() => {
@@ -254,25 +188,9 @@ export class BabylonScene {
             BABYLON.Vector3.Zero(),
             this.scene
         );
-        // this.scene.createPickingRayToRef;
-        // this.camera.rotation = new BABYLON.Vector3(0, 0, 0);
         this.camera.attachControl(canvas, false);
-        const cam2 = new BABYLON.ArcRotateCamera(
-            'cam2',
-            0.2,
-            Math.PI / 2.5,
-            25,
-            BABYLON.Vector3.Zero(),
-            this.scene
-        );
-        cam2.viewport = new BABYLON.Viewport(0.75, 0.75, 0.25, 0.25);
-        this.scene?.activeCameras?.push(cam2);
-        this.scene?.activeCameras?.push(this.camera);
 
-        // this.camera.setPosition(new BABYLON.Vector3(19.94, 8.14, -9.26));
         this.camera.setPosition(new BABYLON.Vector3(0, 8.14, -9.26));
-        // this.camera.checkCollisions = true;
-        // this.camera.collisionRadius = new BABYLON.Vector3(1, 1, 1);
         this.camera.lowerRadiusLimit = 3; // 最小缩放;
         // this.camera.upperRadiusLimit = 8; // 最大缩放
 
@@ -349,30 +267,6 @@ export class BabylonScene {
         if (this.LoadingStore.pct < max) {
             this.LoadingStore.onShow(this.LoadingStore.pct + pros);
         }
-    }
-
-    private addAxesViewer() {
-        const rayX = new BABYLON.Ray(
-            new BABYLON.Vector3(0, 0, 0),
-            new BABYLON.Vector3(1, 0, 0),
-            3000
-        );
-        const rayXHelper = new BABYLON.RayHelper(rayX);
-        rayXHelper.show(this.scene, new BABYLON.Color3(255, 0, 0));
-        const rayY = new BABYLON.Ray(
-            new BABYLON.Vector3(0, 0, 0),
-            new BABYLON.Vector3(0, 1, 0),
-            3000
-        );
-        const rayYHelper = new BABYLON.RayHelper(rayY);
-        rayYHelper.show(this.scene, new BABYLON.Color3(0, 255, 0));
-        const rayZ = new BABYLON.Ray(
-            new BABYLON.Vector3(0, 0, 0),
-            new BABYLON.Vector3(0, 0, 1),
-            3000
-        );
-        const rayZHelper = new BABYLON.RayHelper(rayZ);
-        rayZHelper.show(this.scene, new BABYLON.Color3(0, 0, 255));
     }
 
     public addLigthHelper(light: BABYLON.Light, lightDirection: BABYLON.Vector3) {
@@ -488,7 +382,7 @@ export class BabylonScene {
     private addGround() {
         const ground = BABYLON.MeshBuilder.CreateGround(
             'ground',
-            { width: 100, height: 100 },
+            { width: 500, height: 500 },
             this.scene
         );
         const material = new BABYLON.StandardMaterial('material', this.scene);
@@ -498,7 +392,6 @@ export class BabylonScene {
         ground.receiveShadows = true;
         // ground.position.y = -0.01;
         ground.position.z = 15;
-        console.log(ground.position.y);
         this.addPhysicsAggregate(ground);
     }
 

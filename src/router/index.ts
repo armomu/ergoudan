@@ -9,7 +9,7 @@ export const router = createRouter({
         {
             path: '/',
             name: 'Babylonjs',
-            component: () => import('@/views/babylonjs/babylonjs.vue'),
+            component: () => import('@/views/babylonjs.vue'),
             children: [],
         },
     ],
