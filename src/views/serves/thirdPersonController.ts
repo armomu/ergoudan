@@ -1,7 +1,6 @@
 import * as BABYLON from '@babylonjs/core';
 import * as GUI from '@babylonjs/gui';
 import type { IPhysicsEngine } from '@babylonjs/core/Physics/IPhysicsEngine';
-import { CarController } from './carController';
 export class ThirdPersonController {
     private player!: BABYLON.AbstractMesh;
     private scene!: BABYLON.Scene;

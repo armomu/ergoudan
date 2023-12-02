@@ -155,7 +155,7 @@ export class BabylonScene {
 
     private async loadPlayer() {
         const zombieRes = await this.loadAsset('/textures/', 'zombie-girl.glb', () => {
-            this.onProgress(50, 10);
+            this.onProgress(40, 9);
         });
         const [zombie] = zombieRes.meshes;
         zombie.position.y = 6.3;
@@ -163,7 +163,7 @@ export class BabylonScene {
 
         zombieRes.addAllToScene();
         const container = await this.loadAsset('/textures/', 'x-bot.glb', () => {
-            this.onProgress(100, 3);
+            this.onProgress(100, 6);
         });
         const [mesheRoot] = container.meshes;
         mesheRoot.receiveShadows = true;
@@ -265,7 +265,8 @@ export class BabylonScene {
      */
     private onProgress(max: number, pros: number) {
         if (this.LoadingStore.pct < max) {
-            this.LoadingStore.onShow(this.LoadingStore.pct + pros);
+            const t = this.LoadingStore.pct + pros;
+            this.LoadingStore.onShow(t > 100 ? 100 : t);
         }
     }
 
