@@ -154,14 +154,6 @@ export class BabylonScene {
     }
 
     private async loadPlayer() {
-        const zombieRes = await this.loadAsset('/textures/', 'zombie-girl.glb', () => {
-            this.onProgress(40, 9);
-        });
-        const [zombie] = zombieRes.meshes;
-        zombie.position.y = 6.3;
-        zombie.position.z = 20;
-
-        zombieRes.addAllToScene();
         const container = await this.loadAsset('/textures/', 'x-bot.glb', () => {
             this.onProgress(100, 6);
         });
@@ -171,12 +163,19 @@ export class BabylonScene {
         container.addAllToScene();
         this.characterController = new ThirdPersonController(container, this.camera, this.scene);
         this.addGround();
-        // this.physicsViewer.showBody(this.characterController.physPlayer.body);
         this.LoadingStore.onShow(100);
         setTimeout(() => {
             this.addRandomBox();
             this.LoadingStore.onHide();
         }, 200);
+
+        const zombieRes = await this.loadAsset('/textures/', 'zombie-girl.glb');
+        const [zombie] = zombieRes.meshes;
+        zombie.position.y = 6.3;
+        zombie.position.z = 20;
+        zombie.rotationQuaternion = new BABYLON.Quaternion();
+        zombie.rotation.y = Math.PI;
+        zombieRes.addAllToScene();
     }
 
     private addCamera(canvas: HTMLCanvasElement) {
