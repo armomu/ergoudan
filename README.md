@@ -19,6 +19,7 @@ The principle is very simple, use havok physics to move the character linearly, 
 - ✅ Jump
 - ✅ Climb stairs
 - ✅ Uphill and downhill
+- ❌ First person control 
 - ❌ Mobile device 
     
 ## Screenshot
