@@ -21,6 +21,7 @@ The principle is very simple, use havok physics to move the character linearly, 
 - ✅ Uphill and downhill
 - ❌ First person control 
 - ❌ Mobile device 
+- ❌ Npm package
     
 ## Screenshot
 
