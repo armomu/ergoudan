@@ -12,6 +12,7 @@
 
 The principle is very simple, use havok physics to move the character linearly, Control character using WSAD and space keys
 #### Online Demo [https://armomu.github.io/ergoudan/](https://armomu.github.io/ergoudan/)
+#### Example [scene](https://daisy-kaliman.vercel.app/#/index)
 
 ## TODO
 - ✅ Havok Physics engine
