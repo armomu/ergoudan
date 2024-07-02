@@ -5,6 +5,7 @@
     "module": "ESNext",
     "baseUrl": ".",
     // "allowJs": true,
+    "isolatedModules": false,
     "ignoreDeprecations": "5.0",
     "types": ["vite/client"],
     "paths": {

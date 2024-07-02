@@ -13,11 +13,9 @@
                 <div class="btn" @keyup.enter="onSend" @click="onSend">发送</div>
             </div>
         </div>
-        <Loading />
     </div>
 </template>
 <script setup lang="ts">
-import Loading from './widgets/loading.vue';
 import { onMounted, shallowRef, onBeforeUnmount, reactive } from 'vue';
 import { BabylonScene } from './serves/main';
 const canvasDom = shallowRef<HTMLCanvasElement>();

@@ -2,7 +2,6 @@ import * as BABYLON from '@babylonjs/core';
 import '@babylonjs/loaders/glTF';
 import HavokPhysics from '@babylonjs/havok';
 import { ThirdPersonController } from './thirdPersonController';
-import { useLoading } from '../widgets/loading';
 export class BabylonScene {
     public engine!: BABYLON.Engine;
     public scene!: BABYLON.Scene;
@@ -12,7 +11,6 @@ export class BabylonScene {
     public axesViewer!: BABYLON.AxesViewer;
     public physicsViewer!: BABYLON.PhysicsViewer;
     public characterController!: ThirdPersonController;
-    public LoadingStore = useLoading();
     constructor(_canvas: HTMLCanvasElement) {
         this.main(_canvas);
     }
@@ -29,9 +27,8 @@ export class BabylonScene {
         this.scene.enablePhysics(undefined, this.physicsPlugin);
         this.physicsViewer = new BABYLON.PhysicsViewer();
         this.addCamera(canvas);
-
         this.addLight();
-        this.onCollisionMap();
+        this.addCollisionMap();
         this.engine.runRenderLoop(() => {
             this.scene.render();
         });
@@ -40,9 +37,7 @@ export class BabylonScene {
         });
     }
 
-    public async onCollisionMap() {
-        this.LoadingStore.onShow(1);
-
+    public addCollisionMap() {
         // 创建楼梯的参数
         const stepWidth = 4; // 每个步骤的宽度
         const stepHeight = 0.5; // 每个步骤的高度
@@ -154,28 +149,29 @@ export class BabylonScene {
     }
 
     private async loadPlayer() {
-        const container = await this.loadAsset('/textures/', 'x-bot.glb', () => {
-            this.onProgress(100, 6);
-        });
-        const [mesheRoot] = container.meshes;
-        mesheRoot.receiveShadows = true;
-        this.shadowGenerator.addShadowCaster(mesheRoot);
-        container.addAllToScene();
-        this.characterController = new ThirdPersonController(container, this.camera, this.scene);
-        this.addGround();
-        this.LoadingStore.onShow(100);
-        setTimeout(() => {
+        // const container = await this.loadAsset('/textures/', 'x-bot.glb');
+        // const [mesheRoot] = container.meshes;
+        // mesheRoot.receiveShadows = true;
+        // this.shadowGenerator.addShadowCaster(mesheRoot);
+        // container.addAllToScene();
+        try {
             this.addRandomBox();
-            this.LoadingStore.onHide();
-        }, 200);
+            this.characterController = new ThirdPersonController(this.camera, this.scene);
+            // const [mesheRoot] = this.characterController.meshContent.meshes;
+            // this.shadowGenerator.addShadowCaster(mesheRoot);
+            this.addGround();
 
-        const zombieRes = await this.loadAsset('/textures/', 'zombie-girl.glb');
-        const [zombie] = zombieRes.meshes;
-        zombie.position.y = 6.3;
-        zombie.position.z = 20;
-        zombie.rotationQuaternion = new BABYLON.Quaternion();
-        zombie.rotation.y = Math.PI;
-        zombieRes.addAllToScene();
+            const zombieRes = await this.loadAsset('/textures/', 'zombie-girl.glb');
+            const [zombie] = zombieRes.meshes;
+            zombie.position.y = 6.3;
+            zombie.position.z = 20;
+            zombie.rotationQuaternion = new BABYLON.Quaternion();
+            zombie.rotation.y = Math.PI;
+            zombieRes.addAllToScene();
+        } catch (err) {
+            console.log('err=============');
+            console.log(err);
+        }
     }
 
     private addCamera(canvas: HTMLCanvasElement) {
@@ -255,18 +251,6 @@ export class BabylonScene {
                 }
             );
         });
-    }
-
-    /**
-     * 更新加载进度
-     * @param max 总进度当前最大值
-     * @param pros 当前给总进度增加多少🈯值
-     */
-    private onProgress(max: number, pros: number) {
-        if (this.LoadingStore.pct < max) {
-            const t = this.LoadingStore.pct + pros;
-            this.LoadingStore.onShow(t > 100 ? 100 : t);
-        }
     }
 
     public addLigthHelper(light: BABYLON.Light, lightDirection: BABYLON.Vector3) {

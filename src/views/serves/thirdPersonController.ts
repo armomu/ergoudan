@@ -1,21 +1,23 @@
 import * as BABYLON from '@babylonjs/core';
 import * as GUI from '@babylonjs/gui';
 import type { IPhysicsEngine } from '@babylonjs/core/Physics/IPhysicsEngine';
+
 export class ThirdPersonController {
     private player!: BABYLON.AbstractMesh;
+    private aggregatePlayer!: BABYLON.PhysicsAggregate;
     private scene!: BABYLON.Scene;
     private camera!: BABYLON.ArcRotateCamera;
 
     // 地板物理光线拾取
     private physEngine: BABYLON.Nullable<IPhysicsEngine>;
-    private engine!: BABYLON.Engine;
+    private engine!: BABYLON.AbstractEngine;
 
     private playerDirection = -1;
     private velocity = new BABYLON.Vector3(0, -9.8, 0);
     private fps = 0;
     private iswsad = false;
     private inputMap: InputMap = {};
-    private meshContent!: BABYLON.AssetContainer;
+    public meshContent!: BABYLON.AssetContainer;
     private deltaTime = '0';
     private wallkingSound!: BABYLON.Sound;
 
@@ -38,86 +40,30 @@ export class ThirdPersonController {
         task: false, //
     };
 
-    constructor(
-        _meshContent: BABYLON.AssetContainer,
-        _camera: BABYLON.ArcRotateCamera,
-        _scene: BABYLON.Scene
-    ) {
-        this.scene = _scene;
-        this.camera = _camera;
+    /**
+     * Creates a new ThirdPersonController
+     * @param camera BABYLON.ArcRotateCamera
+     * @param scene BABYLON.Scene
+     */
+    constructor(camera: BABYLON.ArcRotateCamera, scene: BABYLON.Scene) {
+        this.scene = scene;
+        this.camera = camera;
         this.physEngine = this.scene.getPhysicsEngine();
         this.engine = this.scene.getEngine();
-        this.initPlayer(_meshContent);
-        this.scene.actionManager = new BABYLON.ActionManager();
-        this.scene.actionManager.registerAction(
-            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, (evt) => {
-                this.inputKeyState(evt.sourceEvent.code, evt.sourceEvent.type === 'keydown');
-            })
-        );
-        this.scene.actionManager.registerAction(
-            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, (evt) => {
-                this.inputKeyState(evt.sourceEvent.code, evt.sourceEvent.type === 'keydown');
-                this.inputKeyUp(evt.sourceEvent.code);
-            })
-        );
-        const textBlock = this.fpsView();
-        this.scene.onBeforeRenderObservable.add(() => {
-            this.fps = this.engine.getFps();
-            textBlock.text = `FPS ${this.fps.toFixed(0)}`;
-            this.deltaTime = this.engine.getDeltaTime().toFixed();
-            this.updateState();
-        });
-        this.scene.onBeforeAnimationsObservable.add(() => {
-            // 给当前动画增加权重从0加到1
-            if (this.curAnimParam.weight < 1) {
-                this.curAnimParam.weight = BABYLON.Scalar.Clamp(
-                    this.curAnimParam.weight + 0.05,
-                    0,
-                    1
-                );
-                const anim = this.meshContent.animationGroups[this.curAnimParam.anim];
-                anim.setWeightForAllAnimatables(this.curAnimParam.weight);
-                this.meshContent.animationGroups.forEach((ani, key) => {
-                    if (key !== this.oldAnimParam.anim && key !== this.curAnimParam.anim) {
-                        ani.setWeightForAllAnimatables(0);
-                    }
-                });
-            }
-            // 给上一个动画降低权重 从1减到0
-            if (this.oldAnimParam.weight > 0) {
-                this.oldAnimParam.weight = BABYLON.Scalar.Clamp(
-                    this.oldAnimParam.weight - 0.05,
-                    0,
-                    1
-                );
-                const anim = this.meshContent.animationGroups[this.oldAnimParam.anim];
-                anim.setWeightForAllAnimatables(this.oldAnimParam.weight);
-                this.meshContent.animationGroups.forEach((ani, key) => {
-                    if (key !== this.oldAnimParam.anim && key !== this.curAnimParam.anim) {
-                        ani.setWeightForAllAnimatables(0);
-                    }
-                });
-            }
-        });
-        this.wallkingSound = new BABYLON.Sound(
-            'wallking_sound',
-            '/ergoudan/sound/walking.wav',
-            this.scene,
-            null,
-            {
-                loop: true,
-                playbackRate: 2.5,
-            }
-        );
-        // this.wallkingSound.play();
+        this.fpsView();
+        this.initGenerate();
     }
 
-    private initPlayer(container: BABYLON.AssetContainer) {
-        this.meshContent = container;
+    private async initGenerate() {
+        this.meshContent = await this.loadAsset('/textures/', 'x-bot.glb');
+        const [mesheRoot] = this.meshContent.meshes;
+        mesheRoot.receiveShadows = true;
+        this.meshContent.addAllToScene();
+
         this.boxHelper = BABYLON.MeshBuilder.CreateBox('lbl', { height: 3.2 }, this.scene);
         this.boxHelper.visibility = 0;
         this.boxHelper.position.y = 3;
-        container.animationGroups.forEach((item, index) => {
+        this.meshContent.animationGroups.forEach((item, index) => {
             item.play(true);
             if (index === AnimationKey.Idle) {
                 item.setWeightForAllAnimatables(1);
@@ -131,7 +77,6 @@ export class ThirdPersonController {
             this.scene
         );
         player.visibility = 0;
-        const [mesheRoot] = container.meshes;
         mesheRoot.position.y = 5 - 1.8;
         mesheRoot.position.z = -5;
         player.checkCollisions = true;
@@ -140,7 +85,7 @@ export class ThirdPersonController {
         player.position.z = -5;
         player.addChild(mesheRoot);
         this.player = player;
-        this.camera.setTarget(player);
+        this.camera?.setTarget(player);
 
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
@@ -168,10 +113,65 @@ export class ThirdPersonController {
         aggregate.body.setCollisionCallbackEnabled(true);
         const observable = aggregate.body.getCollisionObservable();
         observable.add(this.onCollision.bind(this));
+        this.aggregatePlayer = aggregate;
 
-        // const car = new CarController(this.camera, this.scene, () => {});
-        // car.start();
+        this.scene.actionManager = new BABYLON.ActionManager();
+        this.scene.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, (evt) => {
+                this.inputKeyState(evt.sourceEvent.code, evt.sourceEvent.type === 'keydown');
+            })
+        );
+        this.scene.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, (evt) => {
+                this.inputKeyState(evt.sourceEvent.code, evt.sourceEvent.type === 'keydown');
+                this.inputKeyUp();
+            })
+        );
+
+        this.scene?.onBeforeRenderObservable.add(this.onBeforeRender.bind(this));
+        this.scene?.onBeforeAnimationsObservable.add(this.onBeforeAnimations.bind(this));
+        this.wallkingSound = new BABYLON.Sound(
+            'wallking_sound',
+            '/ergoudan/sound/walking.wav',
+            this.scene,
+            null,
+            {
+                loop: true,
+            }
+        );
     }
+
+    private onBeforeRender = () => {
+        this.fps = this.engine.getFps();
+        this.fpsTextBlock.text = `FPS ${this.fps.toFixed(0)}`;
+        this.deltaTime = this.engine.getDeltaTime().toFixed();
+        this.updateState();
+    };
+
+    private onBeforeAnimations = () => {
+        // 给当前动画增加权重从0加到1
+        if (this.curAnimParam.weight < 1) {
+            this.curAnimParam.weight = BABYLON.Scalar.Clamp(this.curAnimParam.weight + 0.05, 0, 1);
+            const anim = this.meshContent.animationGroups[this.curAnimParam.anim];
+            anim.setWeightForAllAnimatables(this.curAnimParam.weight);
+            this.meshContent.animationGroups.forEach((ani, key) => {
+                if (key !== this.oldAnimParam.anim && key !== this.curAnimParam.anim) {
+                    ani.setWeightForAllAnimatables(0);
+                }
+            });
+        }
+        // 给上一个动画降低权重 从1减到0
+        if (this.oldAnimParam.weight > 0) {
+            this.oldAnimParam.weight = BABYLON.Scalar.Clamp(this.oldAnimParam.weight - 0.05, 0, 1);
+            const anim = this.meshContent.animationGroups[this.oldAnimParam.anim];
+            anim.setWeightForAllAnimatables(this.oldAnimParam.weight);
+            this.meshContent.animationGroups.forEach((ani, key) => {
+                if (key !== this.oldAnimParam.anim && key !== this.curAnimParam.anim) {
+                    ani.setWeightForAllAnimatables(0);
+                }
+            });
+        }
+    };
 
     private onCollision = (event: BABYLON.IPhysicsCollisionEvent) => {
         if (
@@ -298,7 +298,7 @@ export class ThirdPersonController {
                 this.staircaseState.height = this.staircaseRaycast.hitPointWorld.y + 0;
             }
         }
-        // 按下空格键并且没有当前没有跳起任务hasTask
+        // 按下空格键并且当前没有跳起任务hasTask
         if (
             this.inputMap['Space'] &&
             !this.jumpState.jump &&
@@ -358,8 +358,7 @@ export class ThirdPersonController {
     };
 
     // 按键抬起
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private inputKeyUp = (keyCode: string) => {
+    private inputKeyUp = () => {
         if (
             !this.inputMap['KeyW'] &&
             !this.inputMap['KeyS'] &&
@@ -404,7 +403,8 @@ export class ThirdPersonController {
     private lookAtBox() {
         const mesh = this.boxHelper;
         // mesh.position = this.player.position.clone();
-        const cameraDirection = this.camera.getForwardRay().direction;
+        const cameraDirection = this.camera?.getForwardRay().direction;
+        if (!cameraDirection) return BABYLON.Vector3.Zero();
         const d = new BABYLON.Vector3(cameraDirection.x, 0, cameraDirection.z);
         switch (this.playerDirection) {
             case PlayerDirection.Forward:
@@ -465,39 +465,81 @@ export class ThirdPersonController {
         return direction;
     }
 
-    // 获取模型朝向
-    private getPlayerDirection() {
-        const forward = BABYLON.Vector3.TransformCoordinates(
-            new BABYLON.Vector3(0, 0, 1),
-            this.player.getWorldMatrix()
-        );
-        const direction = forward.subtract(this.player?.position);
-        return direction;
-    }
+    private advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI('UI');
+
+    private fpsTextBlock = new GUI.TextBlock();
 
     private fpsView() {
-        const advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI('UI');
-        const textBlock = new GUI.TextBlock();
-        textBlock.text = '';
-        textBlock.fontSize = 13;
-        textBlock.color = 'white';
-        textBlock.paddingLeft = 10;
-        textBlock.paddingBottom = 10;
-        textBlock.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-        textBlock.textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
-        advancedTexture.addControl(textBlock);
+        this.fpsTextBlock.text = '';
+        this.fpsTextBlock.fontSize = 13;
+        this.fpsTextBlock.color = 'white';
+        this.fpsTextBlock.paddingLeft = 10;
+        this.fpsTextBlock.paddingBottom = 10;
+        this.fpsTextBlock.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+        this.fpsTextBlock.textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+        this.advancedTexture.addControl(this.fpsTextBlock);
 
         const tipsBlock = new GUI.TextBlock();
-        // tipsBlock.text = '按esc取消鼠标锁定';
-        tipsBlock.text = '按Esc取消鼠标锁定';
+        tipsBlock.text = 'Press esc to cancel mouse lock';
         tipsBlock.fontSize = 13;
         tipsBlock.color = 'white';
         tipsBlock.paddingLeft = 10;
         tipsBlock.paddingBottom = 30;
         tipsBlock.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
         tipsBlock.textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
-        advancedTexture.addControl(tipsBlock);
-        return textBlock;
+        this.advancedTexture.addControl(tipsBlock);
+    }
+
+    private loadAsset(
+        rootUrl: string,
+        sceneFilename: string,
+        callback?: (event: BABYLON.ISceneLoaderProgressEvent) => void
+    ): Promise<BABYLON.AssetContainer> {
+        return new Promise((resolve, reject) => {
+            const tipsBlock = new GUI.TextBlock();
+            tipsBlock.fontSize = 12;
+            tipsBlock.color = 'white';
+            tipsBlock.paddingRight = 10;
+            tipsBlock.paddingBottom = 30;
+            tipsBlock.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+            tipsBlock.textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+            this.advancedTexture.addControl(tipsBlock);
+            console.log(import.meta.env.BASE_URL + rootUrl);
+            BABYLON.SceneLoader.LoadAssetContainer(
+                import.meta.env.BASE_URL + rootUrl,
+                sceneFilename,
+                this.scene,
+                (container) => {
+                    resolve(container);
+                    tipsBlock.dispose();
+                },
+                (evt) => {
+                    callback && callback(evt);
+                    tipsBlock.text = `${evt.total}/${evt.loaded} ${parseInt(
+                        (evt.loaded / evt.total) * 100 + '%'
+                    )}`;
+                },
+                () => {
+                    reject(null);
+                }
+            );
+        });
+    }
+
+    public dispose() {
+        this.meshContent?.dispose();
+        this.boxHelper?.dispose();
+        this.fpsTextBlock?.dispose();
+        this.advancedTexture?.dispose();
+        this.player.dispose();
+
+        const observable = this.aggregatePlayer.body.getCollisionObservable();
+        observable.removeCallback(this.onCollision);
+        this.aggregatePlayer.dispose();
+
+        this.scene?.onBeforeRenderObservable.removeCallback(this.onBeforeRender);
+        this.scene?.onBeforeAnimationsObservable.removeCallback(this.onBeforeAnimations);
+        // this.actionManager.
     }
 }
 
