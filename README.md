@@ -34,7 +34,7 @@ pnpm run dev
 
 Copy `src/views/serves/thirdPersonController.ts` and `public/textures/x-bot.glb` to your project directory
 
-Change
+Change file path
 
 ```typescript
 // thirdPersonController.ts
@@ -45,15 +45,11 @@ Change
  * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
  * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
  * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
- * @param onSuccess a callback with the scene when import succeeds
- * @param onProgress a callback with a progress event for each file being loaded
- * @param onError a callback with the scene, a message, and possibly an exception when import fails
- * @param pluginExtension the extension used to determine the plugin
- * @param name defines the filename, if the data is binary
+ * ...omit
  * @returns The loaded plugin
  */
 BABYLON.SceneLoader.LoadAssetContainer(
-    import.meta.env.BASE_URL + rootUrl, // Output /ergoudan/textures/ Change to your directory
+    import.meta.env.BASE_URL + rootUrl, // Output /ergoudan/textures/ Change to your `ENV BASE_URL` directory
     sceneFilename // Output x-bot.glb
 );
 ```
