@@ -225,11 +225,11 @@ export class ThirdPersonController {
         // 走路
         if (this.iswsad && !this.jumpState.jump) {
             const dir = this.lookAtBox();
-            let dd_x = (dir.x * delta) / 1;
-            let dd_z = (dir.z * delta) / 1;
-            if (this.fps > 65 && this.fps < 125) {
-                dd_x = dir.x * delta * 2;
-                dd_z = dir.z * delta * 2;
+            let dd_x = dir.x * delta;
+            let dd_z = dir.z * delta;
+            if (this.fps > 70) {
+                dd_x = dd_x * 1.8;
+                dd_z = dd_z * 1.8;
             }
             this.velocity.x = dd_x;
             this.velocity.z = dd_z;
