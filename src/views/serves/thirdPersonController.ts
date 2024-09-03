@@ -10,7 +10,7 @@ export class ThirdPersonController {
 
     // 地板物理光线拾取
     private physEngine: BABYLON.Nullable<IPhysicsEngine>;
-    private engine!: BABYLON.AbstractEngine;
+    private engine!: BABYLON.Engine;
 
     private playerDirection = -1;
     private velocity = new BABYLON.Vector3(0, -9.8, 0);
@@ -40,6 +40,8 @@ export class ThirdPersonController {
         task: false, //
     };
 
+    socket!: WebSocket;
+
     /**
      * Creates a new ThirdPersonController
      * @param camera BABYLON.ArcRotateCamera
@@ -52,6 +54,7 @@ export class ThirdPersonController {
         this.engine = this.scene.getEngine();
         this.fpsView();
         this.initGenerate();
+        this.initWs();
     }
 
     private async initGenerate() {
@@ -118,13 +121,16 @@ export class ThirdPersonController {
         this.scene.actionManager = new BABYLON.ActionManager();
         this.scene.actionManager.registerAction(
             new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, (evt) => {
-                this.inputKeyState(evt.sourceEvent.code, evt.sourceEvent.type === 'keydown');
+                console.log(Date.now(), 'send');
+                this.socket.send(`{"event": "keydown", "data": "${evt.sourceEvent.code}" }`);
+                // this.inputKeyState(evt.sourceEvent.code, evt.sourceEvent.type === 'keydown');
             })
         );
         this.scene.actionManager.registerAction(
             new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, (evt) => {
-                this.inputKeyState(evt.sourceEvent.code, evt.sourceEvent.type === 'keydown');
-                this.inputKeyUp();
+                this.socket.send(`{"event": "keyup", "data": "${evt.sourceEvent.code}" }`);
+                // this.inputKeyState(evt.sourceEvent.code, evt.sourceEvent.type === 'keydown');
+                // this.inputKeyUp();
             })
         );
 
@@ -139,6 +145,22 @@ export class ThirdPersonController {
                 loop: true,
             }
         );
+    }
+
+    private initWs() {
+        this.socket = new WebSocket('ws://127.0.0.1:8085');
+        this.socket.onopen = (e) => {
+            console.log(e);
+        };
+        this.socket.onmessage = (e) => {
+            let res = JSON.parse(e.data);
+            console.log(Date.now(), 'get');
+            res = JSON.parse(res);
+            this.inputKeyState(res.data, res.event === 'keydown');
+            if (res.event === 'keyup') {
+                this.inputKeyUp();
+            }
+        };
     }
 
     private onBeforeRender = () => {
@@ -243,7 +265,7 @@ export class ThirdPersonController {
         this.player?.physicsBody?.setLinearVelocity(this.velocity);
     }
 
-    private inputKeyState = (code: string, input: boolean) => {
+    inputKeyState = (code: string, input: boolean) => {
         this.inputMap[code] = input;
     };
 
