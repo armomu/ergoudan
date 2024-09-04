@@ -47,17 +47,21 @@ export class ThirdPersonController {
      * @param camera BABYLON.ArcRotateCamera
      * @param scene BABYLON.Scene
      */
-    constructor(camera: BABYLON.ArcRotateCamera, scene: BABYLON.Scene) {
+    constructor(
+        camera: BABYLON.ArcRotateCamera,
+        scene: BABYLON.Scene,
+        socket: WebSocket,
+        actionManager = false
+    ) {
         this.scene = scene;
         this.camera = camera;
         this.physEngine = this.scene.getPhysicsEngine();
         this.engine = this.scene.getEngine();
         this.fpsView();
-        this.initGenerate();
-        this.initWs();
+        this.initGenerate(socket, actionManager);
     }
 
-    private async initGenerate() {
+    private async initGenerate(socket: WebSocket, actionManager: boolean) {
         this.meshContent = await this.loadAsset('/textures/', 'x-bot.glb');
         const [mesheRoot] = this.meshContent.meshes;
         mesheRoot.receiveShadows = true;
@@ -117,22 +121,23 @@ export class ThirdPersonController {
         const observable = aggregate.body.getCollisionObservable();
         observable.add(this.onCollision.bind(this));
         this.aggregatePlayer = aggregate;
-
-        this.scene.actionManager = new BABYLON.ActionManager();
-        this.scene.actionManager.registerAction(
-            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, (evt) => {
-                console.log(Date.now(), 'send');
-                this.socket.send(`{"event": "keydown", "data": "${evt.sourceEvent.code}" }`);
-                // this.inputKeyState(evt.sourceEvent.code, evt.sourceEvent.type === 'keydown');
-            })
-        );
-        this.scene.actionManager.registerAction(
-            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, (evt) => {
-                this.socket.send(`{"event": "keyup", "data": "${evt.sourceEvent.code}" }`);
-                // this.inputKeyState(evt.sourceEvent.code, evt.sourceEvent.type === 'keydown');
-                // this.inputKeyUp();
-            })
-        );
+        if (actionManager) {
+            this.scene.actionManager = new BABYLON.ActionManager();
+            this.scene.actionManager.registerAction(
+                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, (evt) => {
+                    socket &&
+                        socket.send(`{"event": "keydown", "data": "${evt.sourceEvent.code}" }`);
+                    // this.inputKeyState(evt.sourceEvent.code, evt.sourceEvent.type === 'keydown');
+                })
+            );
+            this.scene.actionManager.registerAction(
+                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, (evt) => {
+                    socket && socket.send(`{"event": "keyup", "data": "${evt.sourceEvent.code}" }`);
+                    // this.inputKeyState(evt.sourceEvent.code, evt.sourceEvent.type === 'keydown');
+                    // this.inputKeyUp();
+                })
+            );
+        }
 
         this.scene?.onBeforeRenderObservable.add(this.onBeforeRender.bind(this));
         this.scene?.onBeforeAnimationsObservable.add(this.onBeforeAnimations.bind(this));
@@ -145,22 +150,6 @@ export class ThirdPersonController {
                 loop: true,
             }
         );
-    }
-
-    private initWs() {
-        this.socket = new WebSocket('ws://127.0.0.1:8085');
-        this.socket.onopen = (e) => {
-            console.log(e);
-        };
-        this.socket.onmessage = (e) => {
-            let res = JSON.parse(e.data);
-            console.log(Date.now(), 'get');
-            res = JSON.parse(res);
-            this.inputKeyState(res.data, res.event === 'keydown');
-            if (res.event === 'keyup') {
-                this.inputKeyUp();
-            }
-        };
     }
 
     private onBeforeRender = () => {
@@ -380,7 +369,7 @@ export class ThirdPersonController {
     };
 
     // 按键抬起
-    private inputKeyUp = () => {
+    inputKeyUp = () => {
         if (
             !this.inputMap['KeyW'] &&
             !this.inputMap['KeyS'] &&
