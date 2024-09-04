@@ -11,6 +11,7 @@ export class BabylonScene {
     public axesViewer!: BABYLON.AxesViewer;
     public physicsViewer!: BABYLON.PhysicsViewer;
     public characterController!: ThirdPersonController;
+
     constructor(_canvas: HTMLCanvasElement) {
         this.main(_canvas);
     }
@@ -35,6 +36,37 @@ export class BabylonScene {
         window.addEventListener('resize', () => {
             this.engine.resize();
         });
+    }
+
+    socket!: WebSocket;
+
+    uses: any = {};
+
+    private initWs() {
+        this.socket = new WebSocket('ws://192.168.1.9:8085');
+        this.socket.onopen = () => {
+            this.characterController = new ThirdPersonController(
+                this.camera,
+                this.scene,
+                this.socket,
+                true
+            );
+        };
+        this.socket.onmessage = (e) => {
+            const res = JSON.parse(e.data);
+
+            if (res.event === 'keydown' || res.event === 'keyup') {
+                this.characterController.inputKeyState(res.data, res.event === 'keydown');
+            }
+            if (res.event === 'keyup') {
+                this.characterController.inputKeyUp();
+            }
+            if (res.event === 'new') {
+                // this.inputKeyUp();
+                // @ts-ignore
+                this.uses[res.data] = new ThirdPersonController(this.camera, this.scene, null);
+            }
+        };
     }
 
     public addCollisionMap() {
@@ -156,7 +188,7 @@ export class BabylonScene {
         // container.addAllToScene();
         try {
             this.addRandomBox();
-            this.characterController = new ThirdPersonController(this.camera, this.scene);
+            this.initWs();
             // const [mesheRoot] = this.characterController.meshContent.meshes;
             // this.shadowGenerator.addShadowCaster(mesheRoot);
             this.addGround();
