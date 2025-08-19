@@ -143,7 +143,7 @@ export class BabylonScene {
         this.loadPlayer();
     }
 
-    public async addLevelTest() {
+    public async addLevelTest(): Promise<BABYLON.AssetContainer> {
         return new Promise((resolve, reject) => {
             BABYLON.SceneLoader.LoadAssetContainer(
                 'https://raw.githubusercontent.com/CedricGuillemet/dump/master/CharController/',
@@ -221,8 +221,8 @@ export class BabylonScene {
                     fixedMass.body.addConstraint(plane.body, joint);
                     resolve(container);
                 },
-                (evt) => {
-                    console.log(evt);
+                () => {
+                    // console.log(evt);
                 },
                 () => {
                     reject(null);
@@ -235,13 +235,24 @@ export class BabylonScene {
         try {
             // this.scene.
             this.engine.displayLoadingUI();
-            await this.addLevelTest();
-            this.characterController = new ThirdPersonController(this.camera, this.scene);
+            const res = await this.addLevelTest();
+            res.meshes.forEach((mesh, index) => {
+                if (index) {
+                    mesh.receiveShadows = true;
+                    // this.shadowGenerator?.addShadowCaster(mesh);
+                }
+            });
+            this.characterController = new ThirdPersonController(
+                this.camera,
+                this.scene,
+                this.shadowGenerator
+            );
             this.engine.hideLoadingUI();
+            console.log(this.scene);
         } catch (err) {
             console.log('err=============');
             console.log(err);
-            await this.addLevelTest();
+            this.engine.hideLoadingUI();
         }
     }
 
@@ -280,11 +291,11 @@ export class BabylonScene {
             new BABYLON.Vector3(0, 30, 0),
             this.scene
         );
-        hemisphericLight.intensity = 0.1;
+        hemisphericLight.intensity = 0.2;
 
-        const lightDirection = new BABYLON.Vector3(0, -1, 0);
+        const lightDirection = new BABYLON.Vector3(-6, -30, 0);
         const light = new BABYLON.DirectionalLight('DirectionalLight', lightDirection, this.scene);
-        light.position = new BABYLON.Vector3(0, 20, 6);
+        light.position = new BABYLON.Vector3(0, 40, 6);
         light.intensity = 0.5;
         this.shadowGenerator = new BABYLON.ShadowGenerator(2048, light);
         // this.shadowGenerator.useKernelBlur = true;
@@ -293,7 +304,7 @@ export class BabylonScene {
 
         this.shadowGenerator.setDarkness(0.5);
         this.shadowGenerator.filter = BABYLON.ShadowGenerator.FILTER_PCF;
-        // this.addLigthHelper(light, lightDirection);
+        this.addLigthHelper(light, lightDirection);
     }
 
     public loadAsset(

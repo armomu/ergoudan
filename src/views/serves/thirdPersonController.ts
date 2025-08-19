@@ -45,19 +45,28 @@ export class ThirdPersonController {
      * @param camera BABYLON.ArcRotateCamera
      * @param scene BABYLON.Scene
      */
-    constructor(camera: BABYLON.ArcRotateCamera, scene: BABYLON.Scene) {
+    constructor(
+        camera: BABYLON.ArcRotateCamera,
+        scene: BABYLON.Scene,
+        shadowGenerator?: BABYLON.ShadowGenerator
+    ) {
         this.scene = scene;
         this.camera = camera;
         this.physEngine = this.scene.getPhysicsEngine();
         this.engine = this.scene.getEngine();
         this.fpsView();
-        this.initGenerate();
+        this.initGenerate(shadowGenerator);
     }
 
-    private async initGenerate() {
+    private async initGenerate(shadowGenerator?: BABYLON.ShadowGenerator) {
         this.meshContent = await this.loadAsset('/textures/', 'x-bot.glb');
         const [mesheRoot] = this.meshContent.meshes;
-        mesheRoot.receiveShadows = true;
+        // mesheRoot.receiveShadows = true;
+        this.meshContent.meshes.forEach((meshe, index) => {
+            if (index) {
+                shadowGenerator?.addShadowCaster(meshe);
+            }
+        });
         this.meshContent.addAllToScene();
 
         this.boxHelper = BABYLON.MeshBuilder.CreateBox('lbl', { height: 3.2 }, this.scene);
@@ -225,6 +234,7 @@ export class ThirdPersonController {
         // 走路
         if (this.iswsad && !this.jumpState.jump) {
             const dir = this.lookAtBox();
+            console.log(dir.x, dir.z);
             let dd_x = dir.x * delta;
             let dd_z = dir.z * delta;
             if (this.fps > 70) {
