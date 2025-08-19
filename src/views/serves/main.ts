@@ -257,7 +257,6 @@ export class BabylonScene {
                 this.shadowGenerator
             );
             this.addRandomBox();
-            this.engine.setHardwareScalingLevel(0.5);
             this.engine.hideLoadingUI();
             console.log(this.scene);
         } catch (err) {
@@ -281,18 +280,18 @@ export class BabylonScene {
         this.camera.setPosition(new BABYLON.Vector3(0, 8.14, -9.26));
         this.camera.lowerRadiusLimit = 3; // 最小缩放;
         // this.camera.upperRadiusLimit = 8; // 最大缩放
-
+        console.log(import.meta.env.MODE);
         // 锁定鼠标指针
-        // let isLocked = false;
-        // this.scene.onPointerDown = () => {
-        //     if (!isLocked) {
-        //         canvas.requestPointerLock = canvas.requestPointerLock || false;
-        //         if (canvas.requestPointerLock) {
-        //             isLocked = true;
-        //             canvas.requestPointerLock();
-        //         }
-        //     }
-        // };
+        let isLocked = false;
+        this.scene.onPointerDown = () => {
+            if (!isLocked && import.meta.env.MODE === 'production') {
+                canvas.requestPointerLock = canvas.requestPointerLock || false;
+                if (canvas.requestPointerLock) {
+                    isLocked = true;
+                    canvas.requestPointerLock();
+                }
+            }
+        };
     }
 
     private addLight() {

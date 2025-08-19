@@ -134,6 +134,7 @@ export class ThirdPersonController {
             new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, (evt) => {
                 this.inputKeyState(evt.sourceEvent.code, evt.sourceEvent.type === 'keydown');
                 this.inputKeyUp();
+                // console.log('key up', evt.sourceEvent.code);
             })
         );
 
@@ -163,6 +164,7 @@ export class ThirdPersonController {
             this.curAnimParam.weight = BABYLON.Scalar.Clamp(this.curAnimParam.weight + 0.05, 0, 1);
             const anim = this.meshContent.animationGroups[this.curAnimParam.anim];
             anim.setWeightForAllAnimatables(this.curAnimParam.weight);
+
             this.meshContent.animationGroups.forEach((ani, key) => {
                 if (key !== this.oldAnimParam.anim && key !== this.curAnimParam.anim) {
                     ani.setWeightForAllAnimatables(0);
@@ -195,8 +197,10 @@ export class ThirdPersonController {
         }
     };
 
+    private linearSpeed = 17;
+
     private onMove() {
-        const delta = parseInt(this.deltaTime);
+        // const delta = parseInt(this.deltaTime);
         // 上楼梯
         if (
             this.staircaseState.task &&
@@ -234,13 +238,28 @@ export class ThirdPersonController {
         // 走路
         if (this.iswsad && !this.jumpState.jump) {
             const dir = this.lookAtBox();
-            console.log(dir.x, dir.z);
-            let dd_x = dir.x * delta;
-            let dd_z = dir.z * delta;
-            if (this.fps > 70) {
-                dd_x = dd_x * 1.8;
-                dd_z = dd_z * 1.8;
+            // console.log(dir.x, dir.z, delta);
+            const dd_x = dir.x * this.linearSpeed;
+            const dd_z = dir.z * this.linearSpeed;
+            // if (this.fps > 70) {
+            //     dd_x = dd_x * 1.8;
+            //     dd_z = dd_z * 1.8;
+            // }
+
+            // ---- 坡度检测 ----
+            let allowMove = true;
+            if (this.footRaycast.hasHit) {
+                const up = new BABYLON.Vector3(0, 1, 0);
+                const slopeNormal = this.footRaycast.hitNormalWorld;
+                const slopeAngle = Math.acos(BABYLON.Vector3.Dot(up, slopeNormal));
+                const slopeDeg = BABYLON.Tools.ToDegrees(slopeAngle);
+
+                if (slopeDeg > 30) {
+                    // 最大可走坡度
+                    allowMove = false;
+                }
             }
+            console.log(allowMove, '========allowMove==========');
             this.velocity.x = dd_x;
             this.velocity.z = dd_z;
             if (!this.wallkingSound.isPlaying) {
@@ -291,6 +310,9 @@ export class ThirdPersonController {
         }
         if (this.inputMap['KeyS'] && this.inputMap['KeyA']) {
             this.playerDirection = PlayerDirection.LeftBackward;
+        }
+        if (this.inputMap['ShiftLeft'] || this.inputMap['ShiftRight']) {
+            this.linearSpeed = 30;
         }
         if (
             this.inputMap['KeyW'] ||
@@ -385,6 +407,9 @@ export class ThirdPersonController {
                 this.staircaseState.task = false;
                 this.velocity.y = -9.8;
             }
+        }
+        if (!this.inputMap['ShiftLeft'] && !this.inputMap['ShiftRight']) {
+            this.linearSpeed = 17;
         }
         // if (!this.iswsad && this.footRaycast.hasHit) {
         //     this.playerState = PlayerState.Idle;
@@ -497,7 +522,17 @@ export class ThirdPersonController {
         tipsBlock.paddingBottom = 30;
         tipsBlock.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
         tipsBlock.textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+
+        const tipsBlock2 = new GUI.TextBlock();
+        tipsBlock2.text = 'Use WASD to move, Space to jump, Shift to run';
+        tipsBlock2.fontSize = 13;
+        tipsBlock2.color = 'white';
+        tipsBlock2.paddingLeft = 10;
+        tipsBlock2.paddingBottom = 50;
+        tipsBlock2.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+        tipsBlock2.textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
         this.advancedTexture.addControl(tipsBlock);
+        this.advancedTexture.addControl(tipsBlock2);
     }
 
     private loadAsset(
