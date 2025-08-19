@@ -27,6 +27,18 @@ export class BabylonScene {
         this.engine.runRenderLoop(() => {
             this.scene.render();
         });
+
+        // 创建一个定时器，每30帧执行一次场景的渲染
+        // const targetFps = 30;
+        // const interval = 1000 / targetFps;
+        // let lastTime = performance.now();
+        // this.engine.runRenderLoop(() => {
+        //     const now = performance.now();
+        //     if (now - lastTime >= interval) {
+        //         this.scene.render();
+        //         lastTime = now;
+        //     }
+        // });
         window.addEventListener('resize', () => {
             this.engine.resize();
         });
@@ -146,7 +158,7 @@ export class BabylonScene {
     public async addLevelTest(): Promise<BABYLON.AssetContainer> {
         return new Promise((resolve, reject) => {
             BABYLON.SceneLoader.LoadAssetContainer(
-                'https://raw.githubusercontent.com/CedricGuillemet/dump/master/CharController/',
+                '/textures/',
                 'levelTest.glb',
                 this.scene,
                 (container) => {
@@ -155,9 +167,7 @@ export class BabylonScene {
                     rootMesh.position = new BABYLON.Vector3(-30, 0, -20);
                     rootMesh.scaling = new BABYLON.Vector3(3, 3, 3);
                     container.addAllToScene();
-                    const lightmap = new BABYLON.Texture(
-                        'https://raw.githubusercontent.com/CedricGuillemet/dump/master/CharController/lightmap.jpg'
-                    );
+                    const lightmap = new BABYLON.Texture('/textures/lightmap.jpg');
                     // Meshes using the lightmap
                     const lightmapped = [
                         'level_primitive0',
@@ -177,7 +187,6 @@ export class BabylonScene {
                         mesh.freezeWorldMatrix();
                         mesh.doNotSyncBoundingInfo = true;
                     });
-                    // static physics cubes
                     const cubes = [
                         'Cube',
                         'Cube.001',
@@ -247,6 +256,8 @@ export class BabylonScene {
                 this.scene,
                 this.shadowGenerator
             );
+            this.addRandomBox();
+            this.engine.setHardwareScalingLevel(0.5);
             this.engine.hideLoadingUI();
             console.log(this.scene);
         } catch (err) {
@@ -272,16 +283,16 @@ export class BabylonScene {
         // this.camera.upperRadiusLimit = 8; // 最大缩放
 
         // 锁定鼠标指针
-        const isLocked = false;
-        this.scene.onPointerDown = () => {
-            if (!isLocked) {
-                canvas.requestPointerLock = canvas.requestPointerLock || false;
-                if (canvas.requestPointerLock) {
-                    // isLocked = true;
-                    canvas.requestPointerLock();
-                }
-            }
-        };
+        // let isLocked = false;
+        // this.scene.onPointerDown = () => {
+        //     if (!isLocked) {
+        //         canvas.requestPointerLock = canvas.requestPointerLock || false;
+        //         if (canvas.requestPointerLock) {
+        //             isLocked = true;
+        //             canvas.requestPointerLock();
+        //         }
+        //     }
+        // };
     }
 
     private addLight() {
@@ -291,12 +302,12 @@ export class BabylonScene {
             new BABYLON.Vector3(0, 30, 0),
             this.scene
         );
-        hemisphericLight.intensity = 0.2;
+        hemisphericLight.intensity = 0.3;
 
         const lightDirection = new BABYLON.Vector3(-6, -30, 0);
         const light = new BABYLON.DirectionalLight('DirectionalLight', lightDirection, this.scene);
         light.position = new BABYLON.Vector3(0, 40, 6);
-        light.intensity = 0.5;
+        light.intensity = 0.8;
         this.shadowGenerator = new BABYLON.ShadowGenerator(2048, light);
         // this.shadowGenerator.useKernelBlur = true;
         // this.shadowGenerator.blurKernel = 200;
