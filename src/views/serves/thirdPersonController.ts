@@ -110,7 +110,7 @@ export class ThirdPersonController {
         const aggregate = new BABYLON.PhysicsAggregate(
             player,
             BABYLON.PhysicsShapeType.CAPSULE,
-            { mass: 1, friction: 0.5, restitution: 0 },
+            { mass: 1, friction: 0.8, restitution: 0 },
             this.scene
         );
 
@@ -239,8 +239,6 @@ export class ThirdPersonController {
         if (this.iswsad && !this.jumpState.jump) {
             const dir = this.lookAtBox();
             // console.log(dir.x, dir.z, delta);
-            const dd_x = dir.x * this.linearSpeed;
-            const dd_z = dir.z * this.linearSpeed;
             // if (this.fps > 70) {
             //     dd_x = dd_x * 1.8;
             //     dd_z = dd_z * 1.8;
@@ -259,9 +257,15 @@ export class ThirdPersonController {
                     allowMove = false;
                 }
             }
-            console.log(allowMove, '========allowMove==========');
-            this.velocity.x = dd_x;
-            this.velocity.z = dd_z;
+            // console.log(allowMove, '========allowMove==========');
+            if (allowMove) {
+                this.velocity.x = dir.x * this.linearSpeed;
+                this.velocity.z = dir.z * this.linearSpeed;
+            } else {
+                this.velocity.x = 0;
+                this.velocity.z = 0;
+            }
+
             if (!this.wallkingSound.isPlaying) {
                 this.wallkingSound.play();
             }

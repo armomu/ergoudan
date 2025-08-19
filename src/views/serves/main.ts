@@ -179,7 +179,10 @@ export class BabylonScene {
                     lightmapped.forEach((meshName) => {
                         const mesh = this.scene.getMeshByName(meshName) as any;
                         // Create static physics shape for these particular meshes
-                        new BABYLON.PhysicsAggregate(mesh, BABYLON.PhysicsShapeType.MESH);
+                        new BABYLON.PhysicsAggregate(mesh, BABYLON.PhysicsShapeType.MESH, {
+                            mass: 0,
+                            friction: 1.2,
+                        });
                         mesh.isPickable = false;
                         mesh.material.lightmapTexture = lightmap;
                         mesh.material.useLightmapAsShadowmap = true;
