@@ -158,7 +158,7 @@ export class BabylonScene {
     public async addLevelTest(): Promise<BABYLON.AssetContainer> {
         return new Promise((resolve, reject) => {
             BABYLON.SceneLoader.LoadAssetContainer(
-                '/textures/',
+                import.meta.env.BASE_URL + '/textures/',
                 'levelTest.glb',
                 this.scene,
                 (container) => {
@@ -167,7 +167,9 @@ export class BabylonScene {
                     rootMesh.position = new BABYLON.Vector3(-30, 0, -20);
                     rootMesh.scaling = new BABYLON.Vector3(3, 3, 3);
                     container.addAllToScene();
-                    const lightmap = new BABYLON.Texture('/textures/lightmap.jpg');
+                    const lightmap = new BABYLON.Texture(
+                        import.meta.env.BASE_URL + '/textures/lightmap.jpg'
+                    );
                     // Meshes using the lightmap
                     const lightmapped = [
                         'level_primitive0',
