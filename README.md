@@ -92,6 +92,7 @@ export class ThirdPersonController {
 -   ✅ Jump
 -   ✅ Climb stairs
 -   ✅ Uphill and downhill
+-   ✅ Limit the angle of the slope
 -   ❌ First person control
 -   ❌ Mobile device
 -   ❌ Npm package
