@@ -18,17 +18,12 @@ export class BabylonScene {
         const havokPlugin = await HavokPhysics();
         this.engine = new BABYLON.Engine(canvas, true);
         this.scene = new BABYLON.Scene(this.engine);
-        this.scene.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(
-            import.meta.env.BASE_URL + '/textures/environment.dds',
-            this.scene
-        );
-        // this.scene.createDefaultSkybox(this.scene.environmentTexture);
         this.physicsPlugin = new BABYLON.HavokPlugin(true, havokPlugin);
         this.scene.enablePhysics(undefined, this.physicsPlugin);
         this.physicsViewer = new BABYLON.PhysicsViewer();
         this.addCamera(canvas);
         this.addLight();
-        this.addCollisionMap();
+        this.loadPlayer();
         this.engine.runRenderLoop(() => {
             this.scene.render();
         });
@@ -148,29 +143,105 @@ export class BabylonScene {
         this.loadPlayer();
     }
 
-    private async loadPlayer() {
-        // const container = await this.loadAsset('/textures/', 'x-bot.glb');
-        // const [mesheRoot] = container.meshes;
-        // mesheRoot.receiveShadows = true;
-        // this.shadowGenerator.addShadowCaster(mesheRoot);
-        // container.addAllToScene();
-        try {
-            this.addRandomBox();
-            this.characterController = new ThirdPersonController(this.camera, this.scene);
-            // const [mesheRoot] = this.characterController.meshContent.meshes;
-            // this.shadowGenerator.addShadowCaster(mesheRoot);
-            this.addGround();
+    public async addLevelTest() {
+        return new Promise((resolve, reject) => {
+            BABYLON.SceneLoader.LoadAssetContainer(
+                'https://raw.githubusercontent.com/CedricGuillemet/dump/master/CharController/',
+                'levelTest.glb',
+                this.scene,
+                (container) => {
+                    new BABYLON.AxesViewer(this.scene, 3);
+                    const [rootMesh] = container.meshes;
+                    rootMesh.position = new BABYLON.Vector3(-30, 0, -20);
+                    rootMesh.scaling = new BABYLON.Vector3(3, 3, 3);
+                    container.addAllToScene();
+                    const lightmap = new BABYLON.Texture(
+                        'https://raw.githubusercontent.com/CedricGuillemet/dump/master/CharController/lightmap.jpg'
+                    );
+                    // Meshes using the lightmap
+                    const lightmapped = [
+                        'level_primitive0',
+                        'level_primitive1',
+                        'level_primitive2',
+                    ];
+                    lightmapped.forEach((meshName) => {
+                        const mesh = this.scene.getMeshByName(meshName) as any;
+                        // Create static physics shape for these particular meshes
+                        new BABYLON.PhysicsAggregate(mesh, BABYLON.PhysicsShapeType.MESH);
+                        mesh.isPickable = false;
+                        mesh.material.lightmapTexture = lightmap;
+                        mesh.material.useLightmapAsShadowmap = true;
+                        mesh.material.lightmapTexture.uAng = Math.PI;
+                        mesh.material.lightmapTexture.level = 1.6;
+                        mesh.material.lightmapTexture.coordinatesIndex = 1;
+                        mesh.freezeWorldMatrix();
+                        mesh.doNotSyncBoundingInfo = true;
+                    });
+                    // static physics cubes
+                    const cubes = [
+                        'Cube',
+                        'Cube.001',
+                        'Cube.002',
+                        'Cube.003',
+                        'Cube.004',
+                        'Cube.005',
+                    ];
+                    cubes.forEach((meshName) => {
+                        new BABYLON.PhysicsAggregate(
+                            this.scene.getMeshByName(meshName) as any,
+                            BABYLON.PhysicsShapeType.BOX,
+                            { mass: 0.1 }
+                        );
+                    });
+                    // inclined plane
+                    const planeMesh = this.scene.getMeshByName('Cube.006');
+                    planeMesh?.scaling.set(0.03, 3, 1);
+                    const fixedMass = new BABYLON.PhysicsAggregate(
+                        this.scene.getMeshByName('Cube.007') as any,
+                        BABYLON.PhysicsShapeType.BOX,
+                        { mass: 0 }
+                    );
+                    const plane = new BABYLON.PhysicsAggregate(
+                        planeMesh as any,
+                        BABYLON.PhysicsShapeType.BOX,
+                        {
+                            mass: 0.1,
+                        },
+                        this.scene
+                    );
 
-            const zombieRes = await this.loadAsset('/textures/', 'zombie-girl.glb');
-            const [zombie] = zombieRes.meshes;
-            zombie.position.y = 6.3;
-            zombie.position.z = 20;
-            zombie.rotationQuaternion = new BABYLON.Quaternion();
-            zombie.rotation.y = Math.PI;
-            zombieRes.addAllToScene();
+                    // plane joint
+                    const joint = new BABYLON.HingeConstraint(
+                        new BABYLON.Vector3(0.75, 0, 0),
+                        new BABYLON.Vector3(-0.25, 0, 0),
+                        new BABYLON.Vector3(0, 0, -1),
+                        new BABYLON.Vector3(0, 0, 1),
+                        this.scene
+                    );
+                    fixedMass.body.addConstraint(plane.body, joint);
+                    resolve(container);
+                },
+                (evt) => {
+                    console.log(evt);
+                },
+                () => {
+                    reject(null);
+                }
+            );
+        });
+    }
+
+    private async loadPlayer() {
+        try {
+            // this.scene.
+            this.engine.displayLoadingUI();
+            await this.addLevelTest();
+            this.characterController = new ThirdPersonController(this.camera, this.scene);
+            this.engine.hideLoadingUI();
         } catch (err) {
             console.log('err=============');
             console.log(err);
+            await this.addLevelTest();
         }
     }
 
@@ -193,12 +264,7 @@ export class BabylonScene {
         const isLocked = false;
         this.scene.onPointerDown = () => {
             if (!isLocked) {
-                canvas.requestPointerLock =
-                    canvas.requestPointerLock ||
-                    canvas.msRequestPointerLock ||
-                    canvas.mozRequestPointerLock ||
-                    canvas.webkitRequestPointerLock ||
-                    false;
+                canvas.requestPointerLock = canvas.requestPointerLock || false;
                 if (canvas.requestPointerLock) {
                     // isLocked = true;
                     canvas.requestPointerLock();
@@ -339,20 +405,6 @@ export class BabylonScene {
                 // this.physicsViewer.showBody(box.physicsBody);
             }
         }
-    }
-
-    public addSkybox() {
-        const sphere = BABYLON.MeshBuilder.CreateSphere('sphere', { diameter: 20000 }, this.scene);
-        sphere.infiniteDistance = true;
-        const sphereMaterial = new BABYLON.StandardMaterial('sphereMaterial', this.scene);
-        sphereMaterial.emissiveTexture = new BABYLON.Texture(
-            import.meta.env.BASE_URL + '/skybox.png',
-            this.scene
-        );
-        sphereMaterial.emissiveTexture.coordinatesMode = BABYLON.Texture.SPHERICAL_MODE;
-        sphereMaterial.backFaceCulling = false;
-        sphereMaterial.disableLighting = true;
-        sphere.material = sphereMaterial;
     }
 
     public dispose() {
