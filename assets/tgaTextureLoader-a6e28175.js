@@ -1,1 +1,0 @@
-import{h as r,i as n}from"./babylonjs-dce73856.js";import"./index-9926daf8.js";class d{constructor(){this.supportCascades=!1}loadCubeData(){throw".env not supported in Cube."}loadData(e,t,a){const o=new Uint8Array(e.buffer,e.byteOffset,e.byteLength),s=r(o);a(s.width,s.height,t.generateMipMaps,!1,()=>{n(t,o)})}}export{d as _TGATextureLoader};
