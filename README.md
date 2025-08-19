@@ -14,7 +14,7 @@ The principle is very simple, use havok physics to move the character linearly, 
 
 [https://armomu.github.io/ergoudan/](https://armomu.github.io/ergoudan/)
 
-[![YouTube 视频预览](https://img.youtube.com/vi/taBLO56NvdE/0.jpg)](https://youtu.be/taBLO56NvdE)
+https://youtu.be/taBLO56NvdE
 
 ## Use it
 
