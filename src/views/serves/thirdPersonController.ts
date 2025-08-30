@@ -149,6 +149,7 @@ export class ThirdPersonController {
                 loop: true,
             }
         );
+        this.engine.hideLoadingUI();
     }
 
     private onBeforeRender = () => {

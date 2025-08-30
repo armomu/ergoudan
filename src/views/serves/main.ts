@@ -262,7 +262,7 @@ export class BabylonScene {
                 this.shadowGenerator
             );
             this.addRandomBox();
-            this.engine.hideLoadingUI();
+            // this.engine.hideLoadingUI();
             console.log(this.scene);
         } catch (err) {
             console.log('err=============');
