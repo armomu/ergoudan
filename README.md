@@ -1,6 +1,6 @@
 # Ergoudan
 
-### This is a simple Havok physics character controller demo using Babylon.js 6、7
+### This is a simple Havok physics character controller demo using Babylon.js
 
 原理很简单，使用 Havok 物理线性移动控制角色
 
@@ -14,6 +14,7 @@ The principle is very simple, use havok physics to move the character linearly, 
 
 [https://armomu.github.io/ergoudan/](https://armomu.github.io/ergoudan/)
 
+Video
 https://youtu.be/taBLO56NvdE
 
 ## Use it
